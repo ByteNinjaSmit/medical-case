@@ -68,7 +68,7 @@ function MasterLoader() {
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-                <header className="flex-shrink-0 bg-white border-b border-slate-200 p-4 shadow-sm sticky top-0 z-30">
+                <header className="shrink-0 bg-white border-b border-slate-200 p-4 shadow-sm sticky top-0 z-30">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             {isMobile && (
@@ -96,7 +96,7 @@ function MasterLoader() {
                                 </Link>
                                 <ChevronRight className="text-slate-400 w-4 h-4" />
                                 <h1 className="text-lg md:text-xl font-semibold text-slate-800">
-                                    Blood Bank - Sanjivani, Kopargaon
+                                    Homeopathy Clinical Data System
                                 </h1>
                             </div>
                         </div>
