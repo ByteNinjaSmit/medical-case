@@ -9,6 +9,7 @@ import PatientList from './pages/patients/PatientList';
 import NewPatient from './pages/patients/NewPatient';
 import ComplaintList from './pages/complaints/ComplaintList';
 import NewComplaint from './pages/complaints/NewComplaint';
+import NotFound from './pages/Error-Page';
 
 
 const App = () => {
@@ -33,6 +34,7 @@ const App = () => {
           <Route path="complaints" element={<ComplaintList />} />
           <Route path="complaints/new" element={<NewComplaint />} />
         </Route>
+        <Route path="*" element={<NotFound />} />
        </Routes>
 
 
