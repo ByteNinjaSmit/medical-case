@@ -1,0 +1,363 @@
+require("dotenv").config();
+const User = require("../models/user-model");
+const Patient = require("../models/patient-model");
+const Complaint = require("../models/complaint-model");
+const mongoose = require('mongoose');
+
+
+const createPatient = async (req, res, next) => {
+    try {
+        // ============================
+        // 1. Extract Body Fields
+        // ============================
+        const {
+            patientId,
+            visitDate,
+            name,
+            age,
+            sex,
+            maritalStatus,
+            diet,
+            address,
+            mobileNo,
+            referredBy,
+            education,
+            occupation,
+            summary,
+        } = req.body;
+
+        // ============================
+        // 2. Manual Validation (Before DB)
+        // ============================
+
+        // Required fields
+        const requiredFields = {
+            patientId,
+            name,
+            age,
+            sex,
+        };
+
+        for (const [key, value] of Object.entries(requiredFields)) {
+            if (!value || value === "") {
+                return res.status(400).json({
+                    success: false,
+                    message: `${key} is required`,
+                });
+            }
+        }
+
+        // Age check
+        if (age < 0 || age > 120) {
+            return res.status(400).json({
+                success: false,
+                message: "Age must be between 0 and 120",
+            });
+        }
+
+
+        // Sex enum validation
+        const validSex = ["Male", "Female", "Other", "Prefer Not To Say"];
+        if (!validSex.includes(sex)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid value for sex",
+            });
+        }
+
+
+        // Mobile number validation (optional but strict)
+        if (mobileNo) {
+            const mobileRegex = /^(\+?\d{1,3}[- ]?)?\d{7,14}$/;
+            if (!mobileRegex.test(mobileNo)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Invalid mobile number format",
+                });
+            }
+        }
+
+        // ============================
+        // 3. Check if patientId already exists
+        // ============================
+        const existingPatient = await Patient.findOne({ patientId });
+
+        if (existingPatient) {
+            return res.status(400).json({
+                success: false,
+                message: `Patient with patientId '${patientId}' already exists`,
+            });
+        }
+
+
+        // ============================
+        // 3. Create Patient Object
+        // ============================
+
+        const patientData = {
+            patientId,
+            visitDate,
+            name,
+            age,
+            sex,
+            maritalStatus,
+            diet,
+            address,
+            mobileNo,
+            referredBy,
+            education,
+            occupation,
+            summary,
+        };
+
+        // ============================
+        // 4. Save to DB (Mongoose Validation)
+        // ============================
+        const patient = new Patient(patientData);
+        const savedPatient = await patient.save();
+
+        return res.status(201).json({
+            success: true,
+            message: "Patient created successfully",
+            data: savedPatient,
+        });
+
+
+    } catch (error) {
+
+        // Handle Duplicate Key Error (e.g. patientId must be unique)
+        if (error.code === 11000) {
+            return res.status(400).json({
+                success: false,
+                message: `Duplicate value entered for: ${Object.keys(error.keyValue)}`
+            });
+        }
+
+        // Validation Errors
+        if (error.name === "ValidationError") {
+            return res.status(400).json({
+                success: false,
+                message: "Validation Error",
+                errors: error.errors,
+            });
+        }
+
+        console.log(`Error From the createPatient:`, error);
+        next(error); // Pass to global error handler
+    }
+};
+
+
+//  GET All Patient
+const getAllPatients = async (req, res, next) => {
+    try {
+        // Fetch all patients
+        const patients = await Patient.find().sort({ createdAt: -1 });
+
+        // If no patients found
+        if (!patients || patients.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No patients found in the database",
+            });
+        }
+
+        // Success response
+        return res.status(200).json({
+            success: true,
+            count: patients.length,
+            data: patients,
+        });
+
+    } catch (error) {
+        console.log("Error from getAllPatients:", error);
+        next(error); // Pass to global error handler
+    }
+};
+
+
+const createComplaint = async (req, res, next) => {
+    try {
+        // ============================
+        // 1. Extract body fields
+        // ============================
+        const {
+            patient,       // ObjectId of Patient
+            visitDate,
+            complaintNo,
+            complaintText,
+            location,
+            sensation,
+            onset,
+            aggravation,
+            amelioration,
+            concomitants,
+            duration,
+            severity
+        } = req.body;
+
+        // ============================
+        // 2. Manual Validation
+        // ============================
+
+        const requiredFields = {
+            patient,
+            complaintNo,
+            complaintText
+        };
+
+        for (const [key, value] of Object.entries(requiredFields)) {
+            if (!value || value === "") {
+                return res.status(400).json({
+                    success: false,
+                    message: `${key} is required`,
+                });
+            }
+        }
+
+        // Validate complaintNo
+        if (complaintNo <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: "complaintNo must be a positive number",
+            });
+        }
+
+        // Validate patient ObjectId
+        if (!mongoose.isValidObjectId(patient)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid patient ObjectId",
+            });
+        }
+
+        // ============================
+        // 3. Check if Patient Exists
+        // ============================
+        const existingPatient = await Patient.findById(patient);
+
+        if (!existingPatient) {
+            return res.status(404).json({
+                success: false,
+                message: "Patient not found",
+            });
+        }
+
+        // ============================
+        // 4. Check complaintNo uniqueness per patient
+        // ============================
+        const duplicateComplaint = await Complaint.findOne({
+            patient: patient,
+            complaintNo: complaintNo
+        });
+
+        if (duplicateComplaint) {
+            return res.status(400).json({
+                success: false,
+                message: `Complaint No ${complaintNo} already exists for this patient`
+            });
+        }
+
+        // ============================
+        // 5. Build Complaint Data
+        // ============================
+        const complaintData = {
+            patient,
+            visitDate,
+            complaintNo,
+            complaintText,
+            location,
+            sensation,
+            onset,
+            aggravation,
+            amelioration,
+            concomitants,
+            duration,
+            severity
+        };
+
+        // ============================
+        // 6. Save to DB
+        // ============================
+        const complaint = new Complaint(complaintData);
+        const savedComplaint = await complaint.save();
+
+        return res.status(201).json({
+            success: true,
+            message: "Complaint created successfully",
+            data: savedComplaint,
+        });
+
+    } catch (error) {
+
+        // Duplicate key error (complaintNo + patient unique index)
+        if (error.code === 11000) {
+            return res.status(400).json({
+                success: false,
+                message: "Duplicate complaint number for this patient",
+            });
+        }
+
+        // Mongoose Validation Errors
+        if (error.name === "ValidationError") {
+            return res.status(400).json({
+                success: false,
+                message: "Validation Error",
+                errors: error.errors,
+            });
+        }
+
+        console.log("Error from createComplaint:", error);
+        next(error);
+    }
+};
+
+
+
+const getPatientComplaints = async (req, res, next) => {
+    try {
+        const { patientId } = req.params;
+
+        // Validate ObjectId
+        if (!mongoose.isValidObjectId(patientId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid patient ObjectId",
+            });
+        }
+
+        // Check if patient exists
+        const patientExists = await Patient.findById(patientId);
+        if (!patientExists) {
+            return res.status(404).json({
+                success: false,
+                message: "Patient not found",
+            });
+        }
+
+        // Fetch complaints
+        const complaints = await Complaint.find({ patient: patientId })
+            .sort({ complaintNo: 1 });
+
+        return res.status(200).json({
+            success: true,
+            message: "Complaints fetched successfully",
+            data: complaints,
+        });
+
+    } catch (error) {
+        console.log("Error from getPatientComplaints:", error);
+        next(error);
+    }
+};
+
+
+
+
+module.exports = {
+    createPatient,
+    getAllPatients,
+    createComplaint,
+    getPatientComplaints
+
+}

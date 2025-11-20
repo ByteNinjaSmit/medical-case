@@ -1,0 +1,12 @@
+.vscode
+app.log
+server/logs/app.log
+node_modules/
+node_modules
+.env
+*.log
+*.jpeg
+*.csv
+.idea
+.idea/
+*.pdf
