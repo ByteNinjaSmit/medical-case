@@ -64,7 +64,7 @@ export default function EnhancedLoader() {
             {/* Loader Content */}
             <div className="flex-1 text-center lg:text-left">
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-                Blood Bank System
+                Homeopathy Clinical Data System
               </h1>
               <div className="text-4xl sm:text-5xl font-bold text-red-800 mb-6">
                 Loading . . .

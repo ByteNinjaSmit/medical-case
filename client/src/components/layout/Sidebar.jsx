@@ -21,7 +21,6 @@ const MODULES = [
     icon: <List className="w-5 h-5" />,
     subModules: [
       { name: 'Complaint List', icon: <List className="w-5 h-5" />, href: '/complaints', description: 'View complaints by patient' },
-      { name: 'New Complaint', icon: <Plus className="w-5 h-5" />, href: '/complaints/new', description: 'Add a new complaint' },
     ],
     description: 'Complaint management',
   },
@@ -71,22 +70,37 @@ const Sidebar = ({
   }, [location.pathname]);
 
   const handleModuleClick = useCallback((module) => {
-    if (!isOpen && module.subModules && module.subModules.length > 0) {
-      setTempOpenForSubmodule(true);
+    const hasSubmodules = module.subModules && module.subModules.length > 0;
 
+    // If sidebar is collapsed, temporarily open to show submodules
+    if (!isOpen && hasSubmodules) {
+      setTempOpenForSubmodule(true);
       setExpandedModules((prev) => {
-        const newExpanded = new Set(prev);
-        newExpanded.add(module.id);
-        return newExpanded;
+        const next = new Set(prev);
+        next.add(module.id);
+        return next;
       });
-    } else if (module.href) {
+      return;
+    }
+
+    // If sidebar is open and module has submodules, toggle expansion
+    if (hasSubmodules && (isOpen || tempOpenForSubmodule)) {
+      setExpandedModules((prev) => {
+        const next = new Set(prev);
+        if (next.has(module.id)) next.delete(module.id);
+        else next.add(module.id);
+        return next;
+      });
+      return;
+    }
+
+    // Fallback: navigate if module has a direct href
+    if (module.href) {
       navigate(module.href);
-      if (isMobile) {
-        onCloseMobile();
-      }
+      if (isMobile) onCloseMobile();
       setTempOpenForSubmodule(false);
     }
-  }, [navigate, isMobile, onCloseMobile, isOpen]);
+  }, [navigate, isMobile, onCloseMobile, isOpen, tempOpenForSubmodule]);
 
   const handleSubModuleClick = useCallback((module, subModule) => {
     navigate(subModule.href);

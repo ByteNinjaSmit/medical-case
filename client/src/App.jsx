@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import './App.css'
 import { Route, Routes, useLocation } from "react-router-dom"
-import BloodBankDoctorLoginPage from './pages/login/Login';
+import DoctorLoginPage from './pages/login/Login';
 import MasterLayout from './components/layout/Master-Layout';
 import { AuthenticatedRoute } from './components/layout/Authentic-Routes';
 import Home from './pages/Home';
@@ -19,7 +19,7 @@ const App = () => {
     <div>
 
        <Routes>
-        <Route path="/login" element={<BloodBankDoctorLoginPage />} />
+        <Route path="/login" element={<DoctorLoginPage />} />
         <Route
           path="/"
           element={

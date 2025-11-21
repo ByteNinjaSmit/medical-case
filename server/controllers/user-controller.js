@@ -148,30 +148,75 @@ const createPatient = async (req, res, next) => {
 };
 
 
-//  GET All Patient
+//  GET All Patient (with pagination, search, sorting)
 const getAllPatients = async (req, res, next) => {
     try {
-        // Fetch all patients
-        const patients = await Patient.find().sort({ createdAt: -1 });
+        const {
+            page = 1,
+            limit = 10,
+            search = "",
+            sex,
+            sortBy = "createdAt",
+            order = "desc",
+            dateFrom,
+            dateTo,
+        } = req.query;
 
-        // If no patients found
-        if (!patients || patients.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: "No patients found in the database",
-            });
+        const numericPage = Math.max(parseInt(page) || 1, 1);
+        const numericLimit = Math.min(Math.max(parseInt(limit) || 10, 1), 100);
+
+        const filter = {};
+
+        if (search) {
+            const regex = new RegExp(search, "i");
+            filter.$or = [
+                { patientId: regex },
+                { name: regex },
+                { address: regex },
+            ];
         }
 
-        // Success response
+        if (sex) {
+            filter.sex = sex;
+        }
+
+        // Date range on createdAt
+        if (dateFrom || dateTo) {
+            filter.createdAt = {};
+            if (dateFrom) filter.createdAt.$gte = new Date(dateFrom);
+            if (dateTo) {
+                const end = new Date(dateTo);
+                // Include full end day
+                end.setHours(23, 59, 59, 999);
+                filter.createdAt.$lte = end;
+            }
+        }
+
+        const sort = { [sortBy]: order === "asc" ? 1 : -1 };
+
+        const total = await Patient.countDocuments();
+        const totalFiltered = await Patient.countDocuments(filter);
+
+        const patients = await Patient.find(filter)
+            .sort(sort)
+            .skip((numericPage - 1) * numericLimit)
+            .limit(numericLimit);
+
         return res.status(200).json({
             success: true,
-            count: patients.length,
             data: patients,
+            pagination: {
+                page: numericPage,
+                limit: numericLimit,
+                total,
+                totalFiltered,
+                totalPages: Math.ceil(totalFiltered / numericLimit) || 1,
+            },
         });
 
     } catch (error) {
         console.log("Error from getAllPatients:", error);
-        next(error); // Pass to global error handler
+        next(error);
     }
 };
 
@@ -184,7 +229,7 @@ const createComplaint = async (req, res, next) => {
         const {
             patient,       // ObjectId of Patient
             visitDate,
-            complaintNo,
+            // complaintNo intentionally ignored (always computed server-side)
             complaintText,
             location,
             sensation,
@@ -202,7 +247,6 @@ const createComplaint = async (req, res, next) => {
 
         const requiredFields = {
             patient,
-            complaintNo,
             complaintText
         };
 
@@ -215,13 +259,9 @@ const createComplaint = async (req, res, next) => {
             }
         }
 
-        // Validate complaintNo
-        if (complaintNo <= 0) {
-            return res.status(400).json({
-                success: false,
-                message: "complaintNo must be a positive number",
-            });
-        }
+        // Determine complaintNo (always auto-increment server-side)
+        const last = await Complaint.findOne({ patient }).sort({ complaintNo: -1 }).select("complaintNo");
+        const finalComplaintNo = (last?.complaintNo || 0) + 1;
 
         // Validate patient ObjectId
         if (!mongoose.isValidObjectId(patient)) {
@@ -232,29 +272,17 @@ const createComplaint = async (req, res, next) => {
         }
 
         // ============================
-        // 3. Check if Patient Exists
-        // ============================
-        const existingPatient = await Patient.findById(patient);
-
-        if (!existingPatient) {
-            return res.status(404).json({
-                success: false,
-                message: "Patient not found",
-            });
-        }
-
-        // ============================
         // 4. Check complaintNo uniqueness per patient
         // ============================
         const duplicateComplaint = await Complaint.findOne({
             patient: patient,
-            complaintNo: complaintNo
+            complaintNo: finalComplaintNo
         });
 
         if (duplicateComplaint) {
             return res.status(400).json({
                 success: false,
-                message: `Complaint No ${complaintNo} already exists for this patient`
+                message: `Complaint No ${finalComplaintNo} already exists for this patient`
             });
         }
 
@@ -264,7 +292,7 @@ const createComplaint = async (req, res, next) => {
         const complaintData = {
             patient,
             visitDate,
-            complaintNo,
+            complaintNo: finalComplaintNo,
             complaintText,
             location,
             sensation,
@@ -354,10 +382,112 @@ const getPatientComplaints = async (req, res, next) => {
 
 
 
+// ===============================
+// GET Complaints list (pagination & filters)
+// ===============================
+async function getComplaints(req, res, next) {
+    try {
+        const {
+            page = 1,
+            limit = 10,
+            patientId,
+            search = "",
+            severity,
+            sortBy = "createdAt",
+            order = "desc",
+            dateFrom,
+            dateTo,
+        } = req.query;
+
+        const numericPage = Math.max(parseInt(page) || 1, 1);
+        const numericLimit = Math.min(Math.max(parseInt(limit) || 10, 1), 100);
+
+        const filter = {};
+        if (patientId && mongoose.isValidObjectId(patientId)) {
+            filter.patient = patientId;
+        }
+        if (search) {
+            const regex = new RegExp(search, "i");
+            filter.$or = [
+                { complaintText: regex },
+                { location: regex },
+                { sensation: regex },
+                { concomitants: regex },
+            ];
+        }
+        if (severity) {
+            filter.severity = severity;
+        }
+
+        // Date range on createdAt
+        if (dateFrom || dateTo) {
+            filter.createdAt = {};
+            if (dateFrom) filter.createdAt.$gte = new Date(dateFrom);
+            if (dateTo) {
+                const end = new Date(dateTo);
+                end.setHours(23, 59, 59, 999);
+                filter.createdAt.$lte = end;
+            }
+        }
+
+        const sort = { [sortBy]: order === "asc" ? 1 : -1 };
+
+        const total = await Complaint.countDocuments();
+        const totalFiltered = await Complaint.countDocuments(filter);
+
+        const complaints = await Complaint.find(filter)
+            .populate("patient", "patientId name")
+            .sort(sort)
+            .skip((numericPage - 1) * numericLimit)
+            .limit(numericLimit);
+
+        return res.status(200).json({
+            success: true,
+            data: complaints,
+            pagination: {
+                page: numericPage,
+                limit: numericLimit,
+                total,
+                totalFiltered,
+                totalPages: Math.ceil(totalFiltered / numericLimit) || 1,
+            },
+        });
+    } catch (error) {
+        console.log("Error from getComplaints:", error);
+        next(error);
+    }
+}
+
+// ===============================
+// GET next complaint number for a patient
+// ===============================
+async function getNextComplaintNumber(req, res, next) {
+    try {
+        const { patientId } = req.params;
+        if (!patientId || !mongoose.isValidObjectId(patientId)) {
+            return res.status(400).json({ success: false, message: "Invalid patientId" });
+        }
+        const patientExists = await Patient.findById(patientId).select("_id");
+        if (!patientExists) {
+            return res.status(404).json({ success: false, message: "Patient not found" });
+        }
+        const last = await Complaint.findOne({ patient: patientId }).sort({ complaintNo: -1 }).select("complaintNo");
+        const nextNo = (last?.complaintNo || 0) + 1;
+        return res.status(200).json({ success: true, nextComplaintNo: nextNo });
+    } catch (error) {
+        console.log("Error from getNextComplaintNumber:", error);
+        next(error);
+    }
+}
+
+
+
+
 module.exports = {
     createPatient,
     getAllPatients,
     createComplaint,
-    getPatientComplaints
-
+    getPatientComplaints,
+    getComplaints,
+    getNextComplaintNumber
 }

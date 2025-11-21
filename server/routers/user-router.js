@@ -12,4 +12,8 @@ router.route("/patients").get(userControllers.getAllPatients);
 router.route("/new-complaint").post(userControllers.createComplaint);
 router.route("/complaint/:patientId").get(userControllers.getPatientComplaints);
 
+// Complaints list and helpers
+router.route("/complaints").get(userControllers.getComplaints);
+router.route("/complaints/next-no/:patientId").get(userControllers.getNextComplaintNumber);
+
 module.exports = router;

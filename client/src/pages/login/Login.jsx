@@ -23,7 +23,7 @@ import { useAuth } from "@/store/auth"
 import axios from "axios"
 import { toast } from "sonner"
 
-export default function BloodBankDoctorLoginPage() {
+export default function DoctorLoginPage() {
   const navigate = useNavigate();
   const { isLoggedIn, login } = useAuth();
   const [showPassword, setShowPassword] = useState(false)
@@ -110,8 +110,8 @@ export default function BloodBankDoctorLoginPage() {
 
           <div className="text-center mb-6 sm:mb-8 lg:mb-12">
             <div className="border-4 border-red-300 text-white text-3xl font-bold rounded-2xl  flex flex-row shadow-2xl">
-              <div className="bg-red-800 text-white text-3xl font-bold py-1 px-2 rounded-l-md shadow-2xl">HOMEOPATHY</div>
-              <div className=" text-red-200 text-3xl font-bold py-1 px-2 rounded-md  shadow-2xl">CLINICAL DATA SYSTEM</div>
+              <div className="bg-red-800 text-white text-lg sm:text-3xl font-bold py-1 px-2 rounded-l-md shadow-2xl">HOMEOPATHY</div>
+              <div className=" text-red-200 text-lg sm:text-3xl font-bold py-1 px-2 rounded-md  shadow-2xl">CLINICAL DATA SYSTEM</div>
             </div>
   <p className="text-white/90 text-sm sm:text-base lg:text-lg max-w-sm mx-auto px-4 sm:px-0">
              Secure access to the Homeopathy Clinical Data System

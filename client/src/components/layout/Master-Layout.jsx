@@ -58,7 +58,7 @@ function MasterLayout() {
     return (
         <div className="h-screen bg-slate-50 flex overflow-hidden">
             <Sidebar
-                isOpen={sidebarOpen}
+                isOpen={isMobile ? showMobileOverlay : sidebarOpen}
                 onToggle={toggleSidebar}
                 isMobile={isMobile}
                 showMobileOverlay={showMobileOverlay}
