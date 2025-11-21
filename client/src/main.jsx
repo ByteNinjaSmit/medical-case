@@ -5,65 +5,68 @@ import App from './App.jsx'
 import { AuthProvider } from './store/auth.jsx'; // auth.jsx
 import { BrowserRouter } from 'react-router-dom'
 import { Toaster } from 'sonner'
+import { Analytics } from "@vercel/analytics/react"
+
 
 createRoot(document.getElementById('root')).render(
   <AuthProvider>
-          <Toaster
-        position="top-right" // top-right | top-center | bottom-left etc
-        richColors
-        // closeButton
-        expand={true}
-        toastOptions={{
+    <Toaster
+      position="top-right" // top-right | top-center | bottom-left etc
+      richColors
+      // closeButton
+      expand={true}
+      toastOptions={{
+        style: {
+          fontSize: '14px',
+          borderRadius: '0.75rem',
+          padding: '12px 16px',
+        },
+        success: {
           style: {
-            fontSize: '14px',
-            borderRadius: '0.75rem',
-            padding: '12px 16px',
+            background: '#16a34a',
+            color: 'white',
           },
-          success: {
-            style: {
-              background: '#16a34a',
-              color: 'white',
-            },
-            iconTheme: {
-              primary: 'white',
-              secondary: '#15803d',
-            },
+          iconTheme: {
+            primary: 'white',
+            secondary: '#15803d',
           },
-          error: {
-            style: {
-              background: '#dc2626',
-              color: 'white',
-            },
-            iconTheme: {
-              primary: 'white',
-              secondary: '#991b1b',
-            },
+        },
+        error: {
+          style: {
+            background: '#dc2626',
+            color: 'white',
           },
-          info: {
-            style: {
-              background: '#2563eb',
-              color: 'white',
-            },
-            iconTheme: {
-              primary: 'white',
-              secondary: '#1e40af',
-            },
+          iconTheme: {
+            primary: 'white',
+            secondary: '#991b1b',
           },
-          warning: {
-            style: {
-              background: '#f59e0b',
-              color: 'black',
-            },
-            iconTheme: {
-              primary: 'black',
-              secondary: '#b45309',
-            },
+        },
+        info: {
+          style: {
+            background: '#2563eb',
+            color: 'white',
           },
-        }}
+          iconTheme: {
+            primary: 'white',
+            secondary: '#1e40af',
+          },
+        },
+        warning: {
+          style: {
+            background: '#f59e0b',
+            color: 'black',
+          },
+          iconTheme: {
+            primary: 'black',
+            secondary: '#b45309',
+          },
+        },
+      }}
       />
 
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+    <BrowserRouter>
+      <Analytics/>
+      <App />
+    </BrowserRouter>
   </AuthProvider>
 )

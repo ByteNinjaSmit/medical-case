@@ -5,7 +5,6 @@ const express = require("express");
 const cors = require("cors");
 const http = require("http");
 const cookieParser = require("cookie-parser");
-const path = require("path");
 const helmet = require("helmet");
 
 

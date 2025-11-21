@@ -1,10 +1,4 @@
 const mongoose = require('mongoose');
-// Get MongoDB URI from environment variables
-const URI = process.env.MONGODB_URI?.trim(); // connection string to MongoDB server
-
-if (!URI) {
-    throw new Error("Please define the MONGODB_URI environment variable inside .env.local");
-}
 
 // Global cache to store connection status across hot reloads in development
 let cached = global.mongoose || { conn: null, promise: null };
@@ -14,10 +8,14 @@ const connectToDatabase = async () => {
     if (cached.conn) return cached.conn; // Use existing connection if available
 
     if (!cached.promise) {
+        const URI = process.env.MONGODB_URI && process.env.MONGODB_URI.trim();
+        if (!URI) {
+            throw new Error('MONGODB_URI is not set');
+        }
         cached.promise = mongoose.connect(URI, {
             dbName: 'Amruta-Medical',
             bufferCommands: false,
-            maxPoolSize:5,
+            maxPoolSize:200,
             serverSelectionTimeoutMS: 5000, 
             socketTimeoutMS: 10000,
 
