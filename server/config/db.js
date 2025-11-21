@@ -17,7 +17,7 @@ const connectToDatabase = async () => {
         cached.promise = mongoose.connect(URI, {
             dbName: 'Amruta-Medical',
             bufferCommands: false,
-            maxPoolSize:200,
+            maxPoolSize:5,
             serverSelectionTimeoutMS: 5000, 
             socketTimeoutMS: 10000,
 
