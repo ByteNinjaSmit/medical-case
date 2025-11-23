@@ -10,6 +10,8 @@ import NewPatient from './pages/patients/NewPatient';
 import ComplaintList from './pages/complaints/ComplaintList';
 import NewComplaint from './pages/complaints/NewComplaint';
 import NotFound from './pages/Error-Page';
+import PrescriptionList from './pages/prescriptions/PrescriptionList';
+import NewPrescription from './pages/prescriptions/NewPrescription';
 
 
 const App = () => {
@@ -18,7 +20,7 @@ const App = () => {
   return (
     <div>
 
-       <Routes>
+      <Routes>
         <Route path="/login" element={<DoctorLoginPage />} />
         <Route
           path="/"
@@ -33,9 +35,11 @@ const App = () => {
           <Route path="patients/new" element={<NewPatient />} />
           <Route path="complaints" element={<ComplaintList />} />
           <Route path="complaints/new" element={<NewComplaint />} />
+          <Route path="prescriptions" element={<PrescriptionList />} />
+          <Route path="prescriptions/new" element={<NewPrescription />} />
         </Route>
         <Route path="*" element={<NotFound />} />
-       </Routes>
+      </Routes>
 
 
 

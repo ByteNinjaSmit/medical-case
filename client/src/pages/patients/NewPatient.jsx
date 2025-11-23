@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/store/auth';
+
 import Stepper, { Step } from '@/components/Stepper';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import CustomModal from '@/components/CustomModal';
 
 export default function NewPatient() {
-  const { API, authorizationToken } = useAuth();
+  const { API } = useAuth();
+
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -49,7 +51,6 @@ export default function NewPatient() {
 
   const apiCreatePatient = async (payload) =>
     axios.post(`${API}/api/user/new-patient`, payload, {
-      headers: { Authorization: authorizationToken },
       withCredentials: true,
     });
 

@@ -10,6 +10,7 @@ const errorMiddleware = require('./middlewares/error-middleware');
 // Routers
 const authRoutes = require('./routers/auth-router');
 const userRoutes = require('./routers/user-router');
+const prescriptionsRoutes = require('./routers/prescription-router');
 
 function createApp() {
   const app = express();
@@ -83,6 +84,7 @@ function createApp() {
   // Mount routes with /api prefix for consistency across environments
   app.use('/api/auth', authRoutes);
   app.use('/api/user', userRoutes);
+  app.use('/api/prescriptions',prescriptionsRoutes)
 
   // Error handler
   app.use(errorMiddleware);

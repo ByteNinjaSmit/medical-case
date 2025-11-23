@@ -4,6 +4,22 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const mongoose = require('mongoose');
 
+const ACCESS_COOKIE_OPTIONS = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 15 * 60 * 1000,
+};
+
+const REFRESH_COOKIE_OPTIONS = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+};
+
 const doctorRegister = async (req, res,next) => {
     try {
         // const { name, username, email, password } = req.body;
@@ -60,12 +76,15 @@ const doctorLogin = async (req, res, next) => {
         // Validate password
         const user = await userExist.comparePassword(password);
         if (user) {
-            // Generate token
-            const token = await userExist.generateToken();
+            // Generate tokens
+            const accessToken = await userExist.generateToken();
+            const refreshToken = await userExist.generateRefreshToken();
+
+            res.cookie("authToken", accessToken, ACCESS_COOKIE_OPTIONS);
+            res.cookie("refreshToken", refreshToken, REFRESH_COOKIE_OPTIONS);
 
             return res.status(200).json({
                 message: "Login Successful",
-                token,
                 userId: userExist._id.toString(),
             });
         } else {
@@ -84,13 +103,17 @@ const doctorLogin = async (req, res, next) => {
 
 const getCurrentUser = async (req, res, next) => {
   try {
-    const auth = req.header("Authorization");
-    if (!auth) return res.status(401).json({ message: "Unauthorized" });
-    const jwtToken = auth.replace("Bearer", "").trim();
-    const decoded = jwt.verify(jwtToken, process.env.JWT_SECRET_KEY);
+    let token = req.cookies && req.cookies.authToken;
+
+    if (!token) {
+      const auth = req.header("Authorization");
+      if (!auth) return res.status(401).json({ message: "Unauthorized" });
+      token = auth.replace("Bearer", "").trim();
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
     const { userID } = decoded;
 
-    // Fetch user
     const userData = await User.findById(userID).select("-password");
 
     if (!userData) {
@@ -106,8 +129,61 @@ const getCurrentUser = async (req, res, next) => {
   }
 };
 
+const logout = async (req, res, next) => {
+  try {
+    res.clearCookie("authToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+    });
+
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+    });
+
+    return res.status(200).json({ message: "Logout successful" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const refreshAccessToken = async (req, res, next) => {
+  try {
+    const token = req.cookies && req.cookies.refreshToken;
+    if (!token) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_REFRESH_SECRET_KEY || process.env.JWT_SECRET_KEY
+    );
+
+    const { userID } = decoded;
+    const user = await User.findById(userID);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const accessToken = await user.generateToken();
+    res.cookie("authToken", accessToken, ACCESS_COOKIE_OPTIONS);
+
+    return res.status(200).json({ message: "Token refreshed" });
+  } catch (error) {
+    console.error("Error refreshing access token:", error);
+    return res.status(401).json({ message: "Invalid or expired refresh token" });
+  }
+};
+
 module.exports = {
     doctorRegister,
     doctorLogin,
     getCurrentUser,
+    logout,
+    refreshAccessToken,
 }

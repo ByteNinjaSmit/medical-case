@@ -5,9 +5,10 @@ import axios from "axios";
 import RowsPerPageBar from "./RowsPerPageBar";
 import { Eye } from "lucide-react";
 import CustomModal from "@/components/CustomModal";
+import PatientDetailsView from "@/components/PatientDetailsView";
 
 export default function PatientList() {
-  const { API, authorizationToken } = useAuth();
+  const { API } = useAuth();
   const navigate = useNavigate();
 
   const [patients, setPatients] = useState([]);
@@ -33,7 +34,6 @@ export default function PatientList() {
     setError("");
     try {
       const res = await axios.get(`${API}/api/user/patients`, {
-        headers: { Authorization: authorizationToken },
         params: {
           page,
           limit,
@@ -121,6 +121,12 @@ export default function PatientList() {
                       className="h-8 px-3 rounded-md text-xs bg-red-600 text-white hover:bg-red-700"
                     >
                       Add Complaint
+                    </button>
+                    <button
+                      onClick={() => navigate(`/prescriptions?patient=${p._id}`)}
+                      className="h-8 px-3 rounded-md text-xs bg-slate-800 text-white hover:bg-slate-900"
+                    >
+                      Prescriptions
                     </button>
                   </div>
                 </td>
@@ -263,80 +269,23 @@ export default function PatientList() {
           </div>
         </div>
       </div>
-        {showViewModal && (
-          <CustomModal
-            open={showViewModal}
-            title="Patient Details"
-            description={viewPatient ? `${viewPatient.patientId} - ${viewPatient.name}` : ''}
-            confirmText="New Complaint"
-            cancelText="Close"
-            onConfirm={() => { setShowViewModal(false); navigate(`/complaints/new?patient=${viewPatient?._id}`, { state: { patient: viewPatient } }); }}
-            onCancel={() => { setShowViewModal(false); setViewPatient(null); }}
-            confirmVariant="primary"
-            size="lg"
-          >
-            {viewPatient && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                <div>
-                  <div className="text-slate-500">Patient ID</div>
-                  <div className="font-medium text-slate-800">{viewPatient.patientId || '-'}</div>
-                </div>
-                <div>
-                  <div className="text-slate-500">Name</div>
-                  <div className="font-medium text-slate-800">{viewPatient.name || '-'}</div>
-                </div>
-                <div>
-                  <div className="text-slate-500">Sex</div>
-                  <div className="font-medium text-slate-800">{viewPatient.sex || '-'}</div>
-                </div>
-                <div>
-                  <div className="text-slate-500">Age</div>
-                  <div className="font-medium text-slate-800">{viewPatient.age ?? '-'}</div>
-                </div>
-                <div>
-                  <div className="text-slate-500">Mobile</div>
-                  <div className="font-medium text-slate-800">{viewPatient.mobileNo || '-'}</div>
-                </div>
-                <div>
-                  <div className="text-slate-500">Referred By</div>
-                  <div className="font-medium text-slate-800">{viewPatient.referredBy || '-'}</div>
-                </div>
-                <div>
-                  <div className="text-slate-500">Marital Status</div>
-                  <div className="font-medium text-slate-800">{viewPatient.maritalStatus || '-'}</div>
-                </div>
-                <div>
-                  <div className="text-slate-500">Diet</div>
-                  <div className="font-medium text-slate-800">{viewPatient.diet || '-'}</div>
-                </div>
-                <div>
-                  <div className="text-slate-500">Education</div>
-                  <div className="font-medium text-slate-800">{viewPatient.education || '-'}</div>
-                </div>
-                <div>
-                  <div className="text-slate-500">Occupation</div>
-                  <div className="font-medium text-slate-800">{viewPatient.occupation || '-'}</div>
-                </div>
-                <div className="sm:col-span-2">
-                  <div className="text-slate-500">Address</div>
-                  <div className="font-medium text-slate-800 whitespace-pre-wrap">{viewPatient.address || '-'}</div>
-                </div>
-                <div className="sm:col-span-2">
-                  <div className="text-slate-500">Summary</div>
-                  <div className="font-medium text-slate-800 whitespace-pre-wrap">{viewPatient.summary || '-'}</div>
-                </div>
-                <div>
-                  <div className="text-slate-500">Created</div>
-                  <div className="font-medium text-slate-800">{viewPatient.createdAt ? new Date(viewPatient.createdAt).toLocaleString() : '-'}</div>
-                </div>
-                <div>
-                  <div className="text-slate-500">Last Updated</div>
-                  <div className="font-medium text-slate-800">{viewPatient.updatedAt ? new Date(viewPatient.updatedAt).toLocaleString() : '-'}</div>
-                </div>
-              </div>
-            )}
-          </CustomModal>
-        )}
-      </div>
+      {showViewModal && (
+        <CustomModal
+          open={showViewModal}
+          title="Patient Details"
+          description={viewPatient ? `${viewPatient.patientId} - ${viewPatient.name}` : ''}
+          confirmText="New Complaint"
+          cancelText="Close"
+          onConfirm={() => { setShowViewModal(false); navigate(`/complaints/new?patient=${viewPatient?._id}`, { state: { patient: viewPatient } }); }}
+          onCancel={() => { setShowViewModal(false); setViewPatient(null); }}
+          confirmVariant="primary"
+          size="lg"
+        >
+          {viewPatient && (
+            <PatientDetailsView patient={viewPatient} />
+          )}
+        </CustomModal>
+      )}
+    </div>
   );
 }

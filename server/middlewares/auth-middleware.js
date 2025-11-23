@@ -2,10 +2,15 @@ const jwt = require('jsonwebtoken');
 
 module.exports = function auth(req, res, next) {
   try {
-    const authHeader = req.header('Authorization');
-    if (!authHeader) return res.status(401).json({ message: 'Unauthorized' });
+    let token = req.cookies && req.cookies.authToken;
 
-    const token = authHeader.replace('Bearer', '').trim();
+    if (!token) {
+      const authHeader = req.header('Authorization');
+      if (!authHeader) return res.status(401).json({ message: 'Unauthorized' });
+
+      token = authHeader.replace('Bearer', '').trim();
+    }
+
     if (!token) return res.status(401).json({ message: 'Unauthorized' });
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);

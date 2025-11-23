@@ -21,6 +21,7 @@ const errorMiddleware = require("./middlewares/error-middleware");
 // Import Routes
 const authRoutes = require("./routers/auth-router");
 const userRoutes = require('./routers/user-router');
+const prescriptionsRoutes = require('./routers/prescription-router');
 
 
 // Server Setup
@@ -74,6 +75,7 @@ app.get("/", (req, res) => {
 // Remaining Routes
 app.use("/api/auth",authRoutes);
 app.use('/api/user',userRoutes)
+app.use('/api/prescriptions',prescriptionsRoutes)
 
 
 

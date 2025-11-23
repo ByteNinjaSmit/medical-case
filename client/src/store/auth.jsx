@@ -6,84 +6,80 @@ import { toast } from "react-toastify";
 // Create context
 export const AuthContext = createContext();
 
-// Helper function to get token from cookies or localStorage
-const getTokenFromStorage = () => {
-    const cookieValue = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("authToken="));
-    const cookieToken = cookieValue ? cookieValue.split("=")[1] : null;
-    if (cookieToken) return cookieToken;
-    try {
-        return localStorage.getItem('authToken');
-    } catch (_) {
-        return null;
-    }
-};
-
 export const AuthProvider = ({ children }) => {
-    const [token, setToken] = useState(getTokenFromStorage());
-
     const [user, setUser] = useState("");
     const [isLoading, setIsLoading] = useState(true);
     const [isDoctor, setIsDoctor] = useState(false);
-    const authorizationToken = `Bearer ${token}`;
     // const navigate = useNavigate();
-
-    // Function to store token in cookies
-    const storeTokenInCookies = (serverToken) => {
-        setToken(serverToken);
-        try {
-            document.cookie = `authToken=${serverToken}; path=/; max-age=3600`;
-            localStorage.setItem('authToken', serverToken);
-        } catch (_) {}
-    };
 
     // API URL from environment variables
     const API = import.meta.env.VITE_APP_URI_API || 'http://localhost:5000';
 
     // Check if the user is logged in
-    let isLoggedIn = !!token;
+    let isLoggedIn = !!user;
     console.log("isLoggedIn", isLoggedIn);
 
     // Logout functionality
-    const LogoutUser = () => {
-        setToken(null);
-        setIsDoctor(false);
-        // Remove token from cookies
-        document.cookie = "authToken=; path=/; max-age=0";
-        try { localStorage.removeItem('authToken'); } catch (_) {}
+    const LogoutUser = async () => {
+        try {
+            await axios.post(`${API}/api/auth/logout`, {}, { withCredentials: true });
+        } catch (_) {
+        } finally {
+            try { localStorage.removeItem('authToken'); } catch (_) {}
+            setUser("");
+            setIsDoctor(false);
 
-        toast.success(`Logout Successfully`);
+            toast.success(`Logout Successfully`);
 
-        // Navigate to the home page after a short delay
-        setTimeout(() => {
-            window.location.href = '/';
-        }, 500); // Delay navigation for 2 seconds (2000 ms)
+            // Navigate to the home page after a short delay
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 500); // Delay navigation for 2 seconds (2000 ms)
+        }
 
     };
 
+    const refreshSession = async () => {
+        try {
+            const res = await axios.post(`${API}/api/auth/refresh`, {}, {
+                withCredentials: true,
+            });
+            return res.status === 200;
+        } catch (_) {
+            return false;
+        }
+    };
+
     // JWT Authentication - fetch current logged-in user data
-    const userAuthentication = async () => {
-        if (!token) return;
+    const userAuthentication = async (options = { skipRefresh: false }) => {
         try {
             setIsLoading(true);
             const response = await axios.get(`${API}/api/auth/current`, {
-                headers: {
-                    Authorization: authorizationToken,
-                },
                 withCredentials: true,
             });
-            if (response.status == 200) {
+            if (response.status === 200) {
                 const data = response.data;
-                setUser(data.user);
-                const { isDoctor } = data.user || {}
+                setUser(data.user || "");
+                const { isDoctor } = data.user || {};
                 setIsDoctor(isDoctor || false);
 
             } else {
                 console.error("Error fetching user data");
+                setUser("");
+                setIsDoctor(false);
             }
         } catch (error) {
+            if (!options.skipRefresh && error?.response?.status === 401) {
+                const refreshed = await refreshSession();
+                if (refreshed) {
+                    await userAuthentication({ skipRefresh: true });
+                    return;
+                }
+            }
+
             console.log("Error fetching user data", error);
+            setUser("");
+            setIsDoctor(false);
         } finally {
             setIsLoading(false);
         }
@@ -92,9 +88,8 @@ export const AuthProvider = ({ children }) => {
     // Normal login (username/password)
     const login = async (username, password) => {
         try {
-            const res = await axios.post(`${API}/api/auth/login`, { username, password });
-            if (res.status === 200 && res.data?.token) {
-                storeTokenInCookies(res.data.token);
+            const res = await axios.post(`${API}/api/auth/login`, { username, password }, { withCredentials: true });
+            if (res.status === 200) {
                 await userAuthentication();
                 return true;
             }
@@ -106,12 +101,8 @@ export const AuthProvider = ({ children }) => {
 
     // Effect to handle initial user authentication if token exists
     useEffect(() => {
-        if (token) {
-            userAuthentication();
-        } else {
-            setIsLoading(false);
-        }
-    }, [token]);
+        userAuthentication();
+    }, []);
 
     useEffect(() => {
 
@@ -129,13 +120,12 @@ export const AuthProvider = ({ children }) => {
         <AuthContext.Provider
             value={{
                 isLoggedIn,
-                storeTokenInCookies,
                 LogoutUser,
                 user,
-                authorizationToken,
                 isLoading,
                 isDoctor,
                 API,
+
                 login,
             }}
         >

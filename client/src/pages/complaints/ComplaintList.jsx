@@ -4,7 +4,7 @@ import axios from "axios";
 import RowsPerPageBar from "./RowsPerPageBar";
 
 export default function ComplaintList() {
-  const { API, authorizationToken } = useAuth();
+  const { API } = useAuth();
 
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -27,7 +27,6 @@ export default function ComplaintList() {
     setError("");
     try {
       const res = await axios.get(`${API}/api/user/complaints`, {
-        headers: { Authorization: authorizationToken },
         params: {
           page,
           limit,

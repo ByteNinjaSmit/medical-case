@@ -6,7 +6,7 @@ import axios from 'axios';
 import { toast } from 'sonner';
 
 export default function NewComplaint() {
-  const { API, authorizationToken } = useAuth();
+  const { API } = useAuth();
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -53,21 +53,18 @@ export default function NewComplaint() {
 
   const apiCreateComplaint = async (payload) => {
     return axios.post(`${API}/api/user/new-complaint`, payload, {
-      headers: { Authorization: authorizationToken },
       withCredentials: true,
     });
   };
 
   const apiGetNextNo = async (patientId) => {
     return axios.get(`${API}/api/user/complaints/next-no/${patientId}`, {
-      headers: { Authorization: authorizationToken },
       withCredentials: true,
     });
   };
 
   const apiSearchPatients = async (query) => {
     return axios.get(`${API}/api/user/patients`, {
-      headers: { Authorization: authorizationToken },
       params: { page: 1, limit: 5, search: query },
       withCredentials: true,
     });

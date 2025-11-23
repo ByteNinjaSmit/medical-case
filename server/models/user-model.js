@@ -60,7 +60,25 @@ userSchema.methods.generateToken = async function () {
             },
             process.env.JWT_SECRET_KEY,
             {
-                expiresIn: "12h",
+                expiresIn: "15m",
+            }
+        );
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+userSchema.methods.generateRefreshToken = async function () {
+    try {
+        return jwt.sign(
+            {
+                userID: this._id.toString(),
+                username: this.username,
+                role: "doctor",
+            },
+            process.env.JWT_REFRESH_SECRET_KEY || process.env.JWT_SECRET_KEY,
+            {
+                expiresIn: "7d",
             }
         );
     } catch (error) {
