@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "@/store/auth";
 import axios from "axios";
 import { User, FileText, Pill, Calendar, Activity, Clock } from "lucide-react";
+import { format, isValid } from 'date-fns';
 
 export default function PatientDetailsView({ patient }) {
     const { API } = useAuth();
@@ -18,6 +19,8 @@ export default function PatientDetailsView({ patient }) {
             fetchPrescriptions();
         }
     }, [activeTab]);
+
+    // const formattedDate = format(new Date(c.date), 'yyyy-MM-dd');
 
     const fetchComplaints = async () => {
         setLoading(true);
@@ -70,8 +73,8 @@ export default function PatientDetailsView({ patient }) {
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
                         className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 ${activeTab === tab.id
-                                ? "border-red-600 text-red-600"
-                                : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+                            ? "border-red-600 text-red-600"
+                            : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
                             }`}
                     >
                         <tab.icon className="w-4 h-4" />
@@ -114,37 +117,64 @@ export default function PatientDetailsView({ patient }) {
                                 No complaints recorded.
                             </div>
                         ) : (
-                            complaints.map((c, idx) => (
-                                <div key={c._id || idx} className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <div className="font-semibold text-slate-800 flex items-center gap-2">
-                                            <span className="bg-red-100 text-red-700 text-xs px-2 py-0.5 rounded-full">#{c.complaintNumber || idx + 1}</span>
-                                            {new Date(c.date).toLocaleDateString()}
+                            complaints.map((c, idx) => {
+                                // Check if the date is valid
+                                const complaintDate = new Date(c.visitDate || c.createdAt);
+                                const isDateValid = isValid(complaintDate);
+
+                                return (
+                                    <div key={c._id || idx} className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <div className="font-semibold text-slate-800 flex items-center gap-2">
+                                                <span className="bg-red-100 text-red-700 text-xs px-2 py-0.5 rounded-full">
+                                                    #{c.complaintNo || idx + 1}
+                                                </span>
+                                                {/* Check if the date is valid before formatting */}
+                                                {isDateValid ? format(complaintDate, 'yyyy-MM-dd') : 'Invalid Date'}
+                                            </div>
+                                            <div className="text-xs text-slate-500 flex items-center gap-1">
+                                                <Clock className="w-3 h-3" />
+                                                {/* Check if the date is valid before formatting */}
+                                                {isDateValid ? format(complaintDate, 'HH:mm') : 'Invalid Time'}
+                                            </div>
                                         </div>
-                                        <div className="text-xs text-slate-500 flex items-center gap-1">
-                                            <Clock className="w-3 h-3" />
-                                            {new Date(c.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        {c.chiefComplaints && c.chiefComplaints.length > 0 && (
+                                        <div className="space-y-3">
                                             <div>
-                                                <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Chief Complaints</div>
-                                                <ul className="list-disc list-inside text-sm text-slate-700 ml-1">
-                                                    {c.chiefComplaints.map((cc, i) => (
-                                                        <li key={i}>{cc.complaint} <span className="text-slate-400">- {cc.duration}</span></li>
-                                                    ))}
-                                                </ul>
+                                                <div className="text-sm font-medium text-slate-800">{c.complaintText}</div>
+                                                <div className="flex flex-wrap gap-2 mt-1">
+                                                    {c.severity && (
+                                                        <span className={`text-xs px-2 py-0.5 rounded-full border ${c.severity === 'Severe' || c.severity === 'Very Severe' ? 'bg-red-50 text-red-700 border-red-100' :
+                                                                c.severity === 'Moderate' ? 'bg-orange-50 text-orange-700 border-orange-100' :
+                                                                    'bg-green-50 text-green-700 border-green-100'
+                                                            }`}>
+                                                            {c.severity}
+                                                        </span>
+                                                    )}
+                                                    {c.duration && (
+                                                        <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                                                            {c.duration}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
-                                        )}
-                                        {c.notes && (
-                                            <div className="bg-slate-50 p-3 rounded text-sm text-slate-600 italic">
-                                                "{c.notes}"
+
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm text-slate-600 bg-slate-50 p-3 rounded-md">
+                                                {c.location && <div><span className="font-medium text-slate-700">Location:</span> {c.location}</div>}
+                                                {c.sensation && <div><span className="font-medium text-slate-700">Sensation:</span> {c.sensation}</div>}
+                                                {c.concomitants && <div className="sm:col-span-2"><span className="font-medium text-slate-700">Concomitants:</span> {c.concomitants}</div>}
+
+                                                {(c.onset || c.aggravation || c.amelioration) && (
+                                                    <div className="sm:col-span-2 mt-1 pt-2 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                                                        {c.onset && <div><span className="font-medium">Onset:</span> {c.onset}</div>}
+                                                        {c.aggravation && <div><span className="font-medium">Aggravation:</span> {c.aggravation}</div>}
+                                                        {c.amelioration && <div><span className="font-medium">Amelioration:</span> {c.amelioration}</div>}
+                                                    </div>
+                                                )}
                                             </div>
-                                        )}
+                                        </div>
                                     </div>
-                                </div>
-                            ))
+                                );
+                            })
                         )}
                     </div>
                 )}
