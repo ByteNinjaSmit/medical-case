@@ -8,13 +8,13 @@ export default function PatientInfoCard({ patient }) {
         <div className="space-y-6 animate-fade-in">
             {/* Primary Info */}
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="bg-slate-50/50 px-5 py-3 border-b border-slate-100 flex items-center gap-2.5">
+                <div className="bg-slate-50/50 px-4 sm:px-5 py-3 border-b border-slate-100 flex items-center gap-2.5">
                     <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg">
                         <User className="w-4 h-4" />
                     </div>
                     <h3 className="font-semibold text-slate-900 text-sm">Personal Information</h3>
                 </div>
-                <div className="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="p-4 sm:p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <InfoItem label="Full Name" value={patient.name} />
                     <InfoItem label="Patient ID" value={patient.patientId} mono />
                     <InfoItem label="Age / Sex" value={`${patient.age} years / ${patient.sex}`} />
@@ -32,7 +32,7 @@ export default function PatientInfoCard({ patient }) {
                     </div>
                     <h3 className="font-semibold text-slate-900 text-sm">Contact Details</h3>
                 </div>
-                <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="p-4 sm:p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <InfoItem label="Mobile Number" value={patient.mobileNo} icon={Phone} />
                     <div className="sm:col-span-2">
                         <InfoItem label="Address" value={patient.address} />

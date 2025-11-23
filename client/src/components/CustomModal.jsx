@@ -35,11 +35,11 @@ export default function CustomModal({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40"
+      className="fixed inset-0 z-[100] flex items-start sm:items-center justify-center bg-black/40 px-3 sm:px-4 py-4 sm:py-6"
       onClick={onCancel}
     >
       <div
-        className={`bg-white w-full ${maxWidthClass} max-h-[90vh] rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col`}
+        className={`bg-white w-full ${maxWidthClass} max-h-[95vh] sm:max-h-[90vh] rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-4 border-b flex justify-between items-center bg-slate-50/60 flex-shrink-0">
@@ -58,17 +58,17 @@ export default function CustomModal({
           {children}
         </div>
         {!hideFooter && (
-          <div className="flex justify-end gap-2 p-4 border-t bg-slate-50/60 flex-shrink-0">
+          <div className="flex flex-col sm:flex-row sm:justify-end gap-2 p-4 border-t bg-slate-50/60 flex-shrink-0">
             {extraActions}
             <button
               onClick={onCancel}
-              className="px-3 py-2 rounded-md border bg-white text-sm hover:bg-slate-50"
+              className="px-3 py-2 rounded-md border bg-white text-sm hover:bg-slate-50 w-full sm:w-auto flex items-center justify-center"
             >
               {cancelText}
             </button>
             <button
               onClick={onConfirm}
-              className={`px-3 py-2 rounded-md shadow-sm text-sm ${confirmClasses}`}
+              className={`px-3 py-2 rounded-md shadow-sm text-sm w-full sm:w-auto flex items-center justify-center ${confirmClasses}`}
             >
               {confirmText}
             </button>

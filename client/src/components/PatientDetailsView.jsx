@@ -65,14 +65,14 @@ export default function PatientDetailsView({ patient }) {
     ];
 
     return (
-        <div className="flex flex-col h-full min-h-[500px]">
+        <div className="flex flex-col h-full min-h-[380px] sm:min-h-[500px]">
             {/* Tabs Header */}
-            <div className="flex border-b border-slate-200 mb-6 sticky top-0 bg-white z-10">
+            <div className="flex border-b border-slate-200 mb-4 sm:mb-6 sticky top-0 bg-white z-10">
                 {tabs.map((tab) => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`flex items-center gap-2 px-6 py-4 text-sm font-medium transition-all border-b-2 relative ${activeTab === tab.id
+                        className={`flex items-center gap-1.5 px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-all border-b-2 relative ${activeTab === tab.id
                             ? "border-red-600 text-red-600"
                             : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
                             }`}
@@ -87,7 +87,7 @@ export default function PatientDetailsView({ patient }) {
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar pb-6">
+            <div className="flex-1 overflow-y-auto pr-1 sm:pr-2 custom-scrollbar pb-4 sm:pb-6">
                 {activeTab === "overview" && <PatientInfoCard patient={patient} />}
 
                 {activeTab === "complaints" && (

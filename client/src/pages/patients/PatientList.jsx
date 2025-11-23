@@ -397,17 +397,17 @@ export default function PatientList() {
           confirmVariant="primary"
           size="lg"
           extraActions={
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-2 w-full sm:w-auto">
               <button
                 onClick={() => { setShowViewModal(false); navigate(`/patients/${viewPatient?._id}/case`); }}
-                className="px-3 py-2 rounded-md border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 text-sm font-medium flex items-center gap-2"
+                className="px-3 py-2 rounded-md border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 text-sm font-medium flex items-center gap-2 w-full sm:w-auto justify-center"
               >
                 <Activity className="w-4 h-4" />
                 Open Full Case
               </button>
               <button
                 onClick={() => { setShowViewModal(false); navigate(`/prescriptions/new?patient=${viewPatient?._id}`); }}
-                className="px-3 py-2 rounded-md border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-sm font-medium flex items-center gap-2"
+                className="px-3 py-2 rounded-md border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-sm font-medium flex items-center gap-2 w-full sm:w-auto justify-center"
               >
                 <FileText className="w-4 h-4" />
                 New Prescription
