@@ -133,9 +133,9 @@ export default function PatientList() {
                         <Plus className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => navigate(`/prescriptions?patient=${p._id}`)}
-                        className="p-2 rounded-full text-blue-600 hover:bg-blue-50 transition-colors"
-                        title="Prescriptions"
+                        onClick={() => navigate(`/prescriptions/new?patient=${p._id}`)}
+                        className="p-2 rounded-full text-emerald-600 hover:bg-emerald-50 transition-colors"
+                        title="Add Prescription"
                       >
                         <FileText className="w-4 h-4" />
                       </button>
@@ -334,11 +334,11 @@ export default function PatientList() {
                       Add
                     </button>
                     <button
-                      onClick={() => navigate(`/prescriptions?patient=${p._id}`)}
-                      className="flex flex-col items-center justify-center gap-1 py-2 text-xs font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      onClick={() => navigate(`/prescriptions/new?patient=${p._id}`)}
+                      className="flex flex-col items-center justify-center gap-1 py-2 text-xs font-medium text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
                     >
                       <FileText className="w-4 h-4" />
-                      Rx
+                      Rx+
                     </button>
                   </div>
                 </div>
