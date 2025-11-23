@@ -2,6 +2,17 @@ require("dotenv").config();
 const User = require("../models/user-model");
 const Patient = require("../models/patient-model");
 const Complaint = require("../models/complaint-model");
+const PhysicalCharacteristics = require("../models/physical_characteristics-model");
+const Digestion = require("../models/digestion-model");
+const Elimination = require("../models/elimination-model");
+const SleepDreams = require("../models/sleep_dreams-model");
+const SexualFunction = require("../models/sexual_function-model");
+const MenstrualHistory = require("../models/menstrual_history-model");
+const History = require("../models/history-model");
+const ThermalModalities = require("../models/thermal_modalities-model");
+const Investigation = require("../models/investigation-model");
+const FollowUp = require("../models/followup-model");
+const MentalGenerals = require("../models/mental_generals-model");
 const mongoose = require('mongoose');
 
 
@@ -480,14 +491,500 @@ async function getNextComplaintNumber(req, res, next) {
     }
 }
 
+// ===============================
+// Helper: validate patient existence
+// ===============================
+async function ensurePatientExists(patientId) {
+    if (!mongoose.isValidObjectId(patientId)) {
+        return { ok: false, status: 400, message: "Invalid patient ObjectId" };
+    }
+    const patient = await Patient.findById(patientId).select("_id");
+    if (!patient) {
+        return { ok: false, status: 404, message: "Patient not found" };
+    }
+    return { ok: true, patient };
+}
+
+// ===============================
+// Get single patient by id
+// ===============================
+const getPatientById = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        if (!mongoose.isValidObjectId(id)) {
+            return res.status(400).json({ success: false, message: "Invalid patient id" });
+        }
+        const patient = await Patient.findById(id);
+        if (!patient) {
+            return res.status(404).json({ success: false, message: "Patient not found" });
+        }
+        return res.status(200).json({ success: true, data: patient });
+    } catch (error) {
+        console.log("Error from getPatientById:", error);
+        next(error);
+    }
+};
+
+// ===============================
+// One-to-one modules: generic upsert pattern
+// ===============================
+async function upsertOneToOneModule(Model, patientId, body) {
+    const update = { ...body, patient: patientId };
+    const doc = await Model.findOneAndUpdate(
+        { patient: patientId },
+        update,
+        { new: true, upsert: true, setDefaultsOnInsert: true }
+    );
+    return doc;
+}
+
+// Physical Generals (PhysicalCharacteristics)
+const getPhysicalGenerals = async (req, res, next) => {
+    try {
+        const { patientId } = req.params;
+        const check = await ensurePatientExists(patientId);
+        if (!check.ok) {
+            return res.status(check.status).json({ success: false, message: check.message });
+        }
+        const doc = await PhysicalCharacteristics.findOne({ patient: patientId });
+        return res.status(200).json({ success: true, data: doc });
+    } catch (error) {
+        console.log("Error from getPhysicalGenerals:", error);
+        next(error);
+    }
+};
+
+const upsertPhysicalGenerals = async (req, res, next) => {
+    try {
+        const { patientId } = req.params;
+        const check = await ensurePatientExists(patientId);
+        if (!check.ok) {
+            return res.status(check.status).json({ success: false, message: check.message });
+        }
+        const doc = await upsertOneToOneModule(PhysicalCharacteristics, patientId, req.body || {});
+        return res.status(200).json({ success: true, data: doc });
+    } catch (error) {
+        console.log("Error from upsertPhysicalGenerals:", error);
+        next(error);
+    }
+};
+
+// Digestion
+const getDigestion = async (req, res, next) => {
+    try {
+        const { patientId } = req.params;
+        const check = await ensurePatientExists(patientId);
+        if (!check.ok) {
+            return res.status(check.status).json({ success: false, message: check.message });
+        }
+        const doc = await Digestion.findOne({ patient: patientId });
+        return res.status(200).json({ success: true, data: doc });
+    } catch (error) {
+        console.log("Error from getDigestion:", error);
+        next(error);
+    }
+};
+
+const upsertDigestion = async (req, res, next) => {
+    try {
+        const { patientId } = req.params;
+        const check = await ensurePatientExists(patientId);
+        if (!check.ok) {
+            return res.status(check.status).json({ success: false, message: check.message });
+        }
+        const doc = await upsertOneToOneModule(Digestion, patientId, req.body || {});
+        return res.status(200).json({ success: true, data: doc });
+    } catch (error) {
+        console.log("Error from upsertDigestion:", error);
+        next(error);
+    }
+};
+
+// Elimination
+const getElimination = async (req, res, next) => {
+    try {
+        const { patientId } = req.params;
+        const check = await ensurePatientExists(patientId);
+        if (!check.ok) {
+            return res.status(check.status).json({ success: false, message: check.message });
+        }
+        const doc = await Elimination.findOne({ patient: patientId });
+        return res.status(200).json({ success: true, data: doc });
+    } catch (error) {
+        console.log("Error from getElimination:", error);
+        next(error);
+    }
+};
+
+const upsertElimination = async (req, res, next) => {
+    try {
+        const { patientId } = req.params;
+        const check = await ensurePatientExists(patientId);
+        if (!check.ok) {
+            return res.status(check.status).json({ success: false, message: check.message });
+        }
+        const doc = await upsertOneToOneModule(Elimination, patientId, req.body || {});
+        return res.status(200).json({ success: true, data: doc });
+    } catch (error) {
+        console.log("Error from upsertElimination:", error);
+        next(error);
+    }
+};
+
+// Sleep & Dreams
+const getSleepDreams = async (req, res, next) => {
+    try {
+        const { patientId } = req.params;
+        const check = await ensurePatientExists(patientId);
+        if (!check.ok) {
+            return res.status(check.status).json({ success: false, message: check.message });
+        }
+        const doc = await SleepDreams.findOne({ patient: patientId });
+        return res.status(200).json({ success: true, data: doc });
+    } catch (error) {
+        console.log("Error from getSleepDreams:", error);
+        next(error);
+    }
+};
+
+const upsertSleepDreams = async (req, res, next) => {
+    try {
+        const { patientId } = req.params;
+        const check = await ensurePatientExists(patientId);
+        if (!check.ok) {
+            return res.status(check.status).json({ success: false, message: check.message });
+        }
+        const doc = await upsertOneToOneModule(SleepDreams, patientId, req.body || {});
+        return res.status(200).json({ success: true, data: doc });
+    } catch (error) {
+        console.log("Error from upsertSleepDreams:", error);
+        next(error);
+    }
+};
+
+// Sexual Function
+const getSexualFunction = async (req, res, next) => {
+    try {
+        const { patientId } = req.params;
+        const check = await ensurePatientExists(patientId);
+        if (!check.ok) {
+            return res.status(check.status).json({ success: false, message: check.message });
+        }
+        const doc = await SexualFunction.findOne({ patient: patientId });
+        return res.status(200).json({ success: true, data: doc });
+    } catch (error) {
+        console.log("Error from getSexualFunction:", error);
+        next(error);
+    }
+};
+
+const upsertSexualFunction = async (req, res, next) => {
+    try {
+        const { patientId } = req.params;
+        const check = await ensurePatientExists(patientId);
+        if (!check.ok) {
+            return res.status(check.status).json({ success: false, message: check.message });
+        }
+        const doc = await upsertOneToOneModule(SexualFunction, patientId, req.body || {});
+        return res.status(200).json({ success: true, data: doc });
+    } catch (error) {
+        console.log("Error from upsertSexualFunction:", error);
+        next(error);
+    }
+};
+
+// Menstrual History
+const getMenstrualHistory = async (req, res, next) => {
+    try {
+        const { patientId } = req.params;
+        const check = await ensurePatientExists(patientId);
+        if (!check.ok) {
+            return res.status(check.status).json({ success: false, message: check.message });
+        }
+        const doc = await MenstrualHistory.findOne({ patient: patientId });
+        return res.status(200).json({ success: true, data: doc });
+    } catch (error) {
+        console.log("Error from getMenstrualHistory:", error);
+        next(error);
+    }
+};
+
+const upsertMenstrualHistory = async (req, res, next) => {
+    try {
+        const { patientId } = req.params;
+        const check = await ensurePatientExists(patientId);
+        if (!check.ok) {
+            return res.status(check.status).json({ success: false, message: check.message });
+        }
+        const doc = await upsertOneToOneModule(MenstrualHistory, patientId, req.body || {});
+        return res.status(200).json({ success: true, data: doc });
+    } catch (error) {
+        console.log("Error from upsertMenstrualHistory:", error);
+        next(error);
+    }
+};
+
+// History (Past/Family/Personal)
+const getHistory = async (req, res, next) => {
+    try {
+        const { patientId } = req.params;
+        const check = await ensurePatientExists(patientId);
+        if (!check.ok) {
+            return res.status(check.status).json({ success: false, message: check.message });
+        }
+        const doc = await History.findOne({ patient: patientId });
+        return res.status(200).json({ success: true, data: doc });
+    } catch (error) {
+        console.log("Error from getHistory:", error);
+        next(error);
+    }
+};
+
+const upsertHistory = async (req, res, next) => {
+    try {
+        const { patientId } = req.params;
+        const check = await ensurePatientExists(patientId);
+        if (!check.ok) {
+            return res.status(check.status).json({ success: false, message: check.message });
+        }
+        const doc = await upsertOneToOneModule(History, patientId, req.body || {});
+        return res.status(200).json({ success: true, data: doc });
+    } catch (error) {
+        console.log("Error from upsertHistory:", error);
+        next(error);
+    }
+};
+
+// Thermal Modalities
+const getThermalModalities = async (req, res, next) => {
+    try {
+        const { patientId } = req.params;
+        const check = await ensurePatientExists(patientId);
+        if (!check.ok) {
+            return res.status(check.status).json({ success: false, message: check.message });
+        }
+        const doc = await ThermalModalities.findOne({ patient: patientId });
+        return res.status(200).json({ success: true, data: doc });
+    } catch (error) {
+        console.log("Error from getThermalModalities:", error);
+        next(error);
+    }
+};
+
+const upsertThermalModalities = async (req, res, next) => {
+    try {
+        const { patientId } = req.params;
+        const check = await ensurePatientExists(patientId);
+        if (!check.ok) {
+            return res.status(check.status).json({ success: false, message: check.message });
+        }
+        const doc = await upsertOneToOneModule(ThermalModalities, patientId, req.body || {});
+        return res.status(200).json({ success: true, data: doc });
+    } catch (error) {
+        console.log("Error from upsertThermalModalities:", error);
+        next(error);
+    }
+};
+
+// Mental Generals
+const getMentalGenerals = async (req, res, next) => {
+    try {
+        const { patientId } = req.params;
+        const check = await ensurePatientExists(patientId);
+        if (!check.ok) {
+            return res.status(check.status).json({ success: false, message: check.message });
+        }
+        const doc = await MentalGenerals.findOne({ patient: patientId });
+        return res.status(200).json({ success: true, data: doc });
+    } catch (error) {
+        console.log("Error from getMentalGenerals:", error);
+        next(error);
+    }
+};
+
+const upsertMentalGenerals = async (req, res, next) => {
+    try {
+        const { patientId } = req.params;
+        const check = await ensurePatientExists(patientId);
+        if (!check.ok) {
+            return res.status(check.status).json({ success: false, message: check.message });
+        }
+        const doc = await upsertOneToOneModule(MentalGenerals, patientId, req.body || {});
+        return res.status(200).json({ success: true, data: doc });
+    } catch (error) {
+        console.log("Error from upsertMentalGenerals:", error);
+        next(error);
+    }
+};
+
+// Investigations (multi per patient)
+const getInvestigations = async (req, res, next) => {
+    try {
+        const { patientId } = req.params;
+        const check = await ensurePatientExists(patientId);
+        if (!check.ok) {
+            return res.status(check.status).json({ success: false, message: check.message });
+        }
+        const list = await Investigation.find({ patient: patientId }).sort({ date: -1 });
+        return res.status(200).json({ success: true, data: list });
+    } catch (error) {
+        console.log("Error from getInvestigations:", error);
+        next(error);
+    }
+};
+
+const createInvestigation = async (req, res, next) => {
+    try {
+        const { patientId } = req.params;
+        const check = await ensurePatientExists(patientId);
+        if (!check.ok) {
+            return res.status(check.status).json({ success: false, message: check.message });
+        }
+        const payload = { ...req.body, patient: patientId };
+        const inv = new Investigation(payload);
+        const saved = await inv.save();
+        return res.status(201).json({ success: true, data: saved });
+    } catch (error) {
+        console.log("Error from createInvestigation:", error);
+        next(error);
+    }
+};
+
+const updateInvestigation = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        if (!mongoose.isValidObjectId(id)) {
+            return res.status(400).json({ success: false, message: "Invalid investigation id" });
+        }
+        const updated = await Investigation.findByIdAndUpdate(id, req.body || {}, { new: true });
+        if (!updated) {
+            return res.status(404).json({ success: false, message: "Investigation not found" });
+        }
+        return res.status(200).json({ success: true, data: updated });
+    } catch (error) {
+        console.log("Error from updateInvestigation:", error);
+        next(error);
+    }
+};
+
+const deleteInvestigation = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        if (!mongoose.isValidObjectId(id)) {
+            return res.status(400).json({ success: false, message: "Invalid investigation id" });
+        }
+        const deleted = await Investigation.findByIdAndDelete(id);
+        if (!deleted) {
+            return res.status(404).json({ success: false, message: "Investigation not found" });
+        }
+        return res.status(200).json({ success: true, message: "Investigation deleted" });
+    } catch (error) {
+        console.log("Error from deleteInvestigation:", error);
+        next(error);
+    }
+};
+
+// Follow-ups (multi per patient)
+const getFollowUps = async (req, res, next) => {
+    try {
+        const { patientId } = req.params;
+        const check = await ensurePatientExists(patientId);
+        if (!check.ok) {
+            return res.status(check.status).json({ success: false, message: check.message });
+        }
+        const list = await FollowUp.find({ patient: patientId }).sort({ date: -1 });
+        return res.status(200).json({ success: true, data: list });
+    } catch (error) {
+        console.log("Error from getFollowUps:", error);
+        next(error);
+    }
+};
+
+const createFollowUp = async (req, res, next) => {
+    try {
+        const { patientId } = req.params;
+        const check = await ensurePatientExists(patientId);
+        if (!check.ok) {
+            return res.status(check.status).json({ success: false, message: check.message });
+        }
+        const payload = { ...req.body, patient: patientId };
+        const follow = new FollowUp(payload);
+        const saved = await follow.save();
+        return res.status(201).json({ success: true, data: saved });
+    } catch (error) {
+        console.log("Error from createFollowUp:", error);
+        next(error);
+    }
+};
+
+const updateFollowUp = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        if (!mongoose.isValidObjectId(id)) {
+            return res.status(400).json({ success: false, message: "Invalid follow-up id" });
+        }
+        const updated = await FollowUp.findByIdAndUpdate(id, req.body || {}, { new: true });
+        if (!updated) {
+            return res.status(404).json({ success: false, message: "Follow-up not found" });
+        }
+        return res.status(200).json({ success: true, data: updated });
+    } catch (error) {
+        console.log("Error from updateFollowUp:", error);
+        next(error);
+    }
+};
+
+const deleteFollowUp = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        if (!mongoose.isValidObjectId(id)) {
+            return res.status(400).json({ success: false, message: "Invalid follow-up id" });
+        }
+        const deleted = await FollowUp.findByIdAndDelete(id);
+        if (!deleted) {
+            return res.status(404).json({ success: false, message: "Follow-up not found" });
+        }
+        return res.status(200).json({ success: true, message: "Follow-up deleted" });
+    } catch (error) {
+        console.log("Error from deleteFollowUp:", error);
+        next(error);
+    }
+};
 
 
 
 module.exports = {
     createPatient,
     getAllPatients,
+    getPatientById,
     createComplaint,
     getPatientComplaints,
     getComplaints,
-    getNextComplaintNumber
+    getNextComplaintNumber,
+    getPhysicalGenerals,
+    upsertPhysicalGenerals,
+    getDigestion,
+    upsertDigestion,
+    getElimination,
+    upsertElimination,
+    getSleepDreams,
+    upsertSleepDreams,
+    getSexualFunction,
+    upsertSexualFunction,
+    getMenstrualHistory,
+    upsertMenstrualHistory,
+    getHistory,
+    upsertHistory,
+    getThermalModalities,
+    upsertThermalModalities,
+    getMentalGenerals,
+    upsertMentalGenerals,
+    getInvestigations,
+    createInvestigation,
+    updateInvestigation,
+    deleteInvestigation,
+    getFollowUps,
+    createFollowUp,
+    updateFollowUp,
+    deleteFollowUp,
 }

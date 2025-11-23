@@ -3,7 +3,7 @@ import { useAuth } from "@/store/auth";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import RowsPerPageBar from "./RowsPerPageBar";
-import { Eye, Plus, FileText, Search, Filter, ChevronDown, ChevronUp, Calendar, User, MapPin } from "lucide-react";
+import { Eye, Plus, FileText, Search, Filter, ChevronDown, ChevronUp, Calendar, User, MapPin, Activity } from "lucide-react";
 import CustomModal from "@/components/CustomModal";
 import PatientDetailsView from "@/components/PatientDetailsView";
 
@@ -397,13 +397,22 @@ export default function PatientList() {
           confirmVariant="primary"
           size="lg"
           extraActions={
-            <button
-              onClick={() => { setShowViewModal(false); navigate(`/prescriptions/new?patient=${viewPatient?._id}`); }}
-              className="px-3 py-2 rounded-md border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-sm font-medium flex items-center gap-2"
-            >
-              <FileText className="w-4 h-4" />
-              New Prescription
-            </button>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => { setShowViewModal(false); navigate(`/patients/${viewPatient?._id}/case`); }}
+                className="px-3 py-2 rounded-md border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 text-sm font-medium flex items-center gap-2"
+              >
+                <Activity className="w-4 h-4" />
+                Open Full Case
+              </button>
+              <button
+                onClick={() => { setShowViewModal(false); navigate(`/prescriptions/new?patient=${viewPatient?._id}`); }}
+                className="px-3 py-2 rounded-md border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-sm font-medium flex items-center gap-2"
+              >
+                <FileText className="w-4 h-4" />
+                New Prescription
+              </button>
+            </div>
           }
         >
           {viewPatient && (
