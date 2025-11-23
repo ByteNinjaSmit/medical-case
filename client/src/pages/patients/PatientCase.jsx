@@ -44,6 +44,16 @@ const PatientCase = () => {
     navigate("/patients");
   };
 
+  const handleAddComplaint = () => {
+    if (!patient) return;
+    navigate(`/complaints/new?patient=${patient._id}`, { state: { patient } });
+  };
+
+  const handleAddPrescription = () => {
+    if (!patient) return;
+    navigate(`/prescriptions/new?patient=${patient._id}`);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <div className="border-b border-slate-200 bg-white">
@@ -61,10 +71,10 @@ const PatientCase = () => {
               <p className="text-xs uppercase tracking-wide text-slate-500 mb-0.5">
                 Patient Case Record
               </p>
-              <h1 className="text-lg sm:text-xl font-semibold text-slate-900">
+              <h1 className="text-xl sm:text-2xl font-semibold text-slate-900">
                 {patient?.name || "Loading..."}
                 {patient?.patientId && (
-                  <span className="ml-2 text-xs font-mono text-slate-500">({patient.patientId})</span>
+                  <span className="ml-2 text-[11px] sm:text-xs font-mono text-slate-500">({patient.patientId})</span>
                 )}
               </h1>
             </div>
@@ -139,6 +149,29 @@ const PatientCase = () => {
           </Tabs>
         </motion.div>
       </div>
+
+      {/* Mobile quick actions bar */}
+      {patient && (
+        <div className="md:hidden fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 backdrop-blur-sm">
+          <div className="max-w-6xl mx-auto px-3 py-2 flex items-center gap-2">
+            <Button
+              type="button"
+              onClick={handleAddComplaint}
+              className="flex-1 h-9 text-xs font-semibold rounded-full bg-red-600 hover:bg-red-700 text-white shadow-sm"
+            >
+              New Complaint
+            </Button>
+            <Button
+              type="button"
+              onClick={handleAddPrescription}
+              variant="outline"
+              className="flex-1 h-9 text-xs font-semibold rounded-full border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100"
+            >
+              New Prescription
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
