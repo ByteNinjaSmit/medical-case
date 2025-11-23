@@ -51,29 +51,29 @@ export default function HomePage() {
       <div className="absolute bottom-1/4 right-8 w-12 h-12 bg-orange-300 rounded-full opacity-60"></div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 py-12">
-        
+
         {/* Header Section */}
         <div
-          className={`text-center mb-16 transition-all duration-1000 ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+          className={`text-center mb-10 md:mb-16 transition-all duration-1000 ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
             }`}
         >
           <div className="flex items-center justify-center mb-8">
             <div className="relative">
               <div className="w-24 h-24 bg-orange-800 rounded-full flex items-center justify-center border-4 border-orange-200 shadow-2xl">
-                <GiDrop  className="w-16 h-16 text-white" />
+                <GiDrop className="w-16 h-16 text-white" />
               </div>
             </div>
           </div>
 
           <div className="mb-8">
             <div className="flex items-center justify-center mb-4">
-              <div className="border-4 border-red-800 text-white text-3xl font-bold rounded-2xl  flex flex-row shadow-2xl">
-                <div className="bg-red-800 text-white text-3xl font-bold py-1 px-2 rounded-l-md shadow-2xl">HOMEOPATHY</div>
-                <div className=" text-red-800 text-3xl font-bold py-1 px-2 rounded-md  shadow-2xl">CLINICAL DATA SYSTEM</div>
+              <div className="border-4 border-red-800 text-white text-xl md:text-3xl font-bold rounded-2xl  flex flex-row shadow-2xl">
+                <div className="bg-red-800 text-white text-xl md:text-3xl font-bold py-1 px-2 rounded-l-md shadow-2xl">HOMEOPATHY</div>
+                <div className=" text-red-800 text-xl md:text-3xl font-bold py-1 px-2 rounded-md  shadow-2xl">CLINICAL DATA SYSTEM</div>
               </div>
             </div>
-            <h1 className="text-4xl font-bold text-red-800 mb-4">Clinical Case Taking & Patient Records</h1>
-            <p className="text-gray-600 text-xl max-w-3xl mx-auto leading-relaxed">
+            <h1 className="text-2xl md:text-4xl font-bold text-red-800 mb-4">Clinical Case Taking & Patient Records</h1>
+            <p className="text-gray-600 text-base md:text-xl max-w-3xl mx-auto leading-relaxed">
               Record patient data, manage complaints, and streamline homeopathic case taking with secure, fast tools.
             </p>
           </div>
@@ -94,8 +94,8 @@ export default function HomePage() {
                     <capability.icon className="w-8 h-8 text-white" />
                   </div>
                 </div>
-                <h2 className="text-3xl font-bold text-gray-800 mb-2">{capability.category}</h2>
-                <p className="text-gray-600 text-lg max-w-2xl mx-auto">{capability.description}</p>
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">{capability.category}</h2>
+                <p className="text-gray-600 text-base md:text-lg max-w-2xl mx-auto">{capability.description}</p>
               </div>
 
               {/* Features Grid */}

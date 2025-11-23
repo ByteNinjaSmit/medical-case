@@ -49,11 +49,12 @@ function MasterLayout() {
         setShowMobileOverlay(false);
     }, []);
 
+    // Close mobile sidebar on route change
     useEffect(() => {
-        if (isMobile && showMobileOverlay) {
+        if (isMobile) {
             closeMobileOverlay();
         }
-    }, [pathname, isMobile, showMobileOverlay, closeMobileOverlay]);
+    }, [pathname]);
 
     return (
         <div className="h-screen bg-slate-50 flex overflow-hidden">
@@ -87,8 +88,8 @@ function MasterLayout() {
                                 </button>
                             )}
                             <div className="flex items-center gap-2">
-                                <Link 
-                                    to={'/'} 
+                                <Link
+                                    to={'/'}
                                     className="cursor-pointer text-red-800 hover:text-red-800 transition-colors flex items-center gap-2"
                                 >
                                     <FaHome className="w-5 h-5" />
