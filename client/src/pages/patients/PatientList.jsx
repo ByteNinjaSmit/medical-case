@@ -107,8 +107,8 @@ export default function PatientList() {
                   <td className="px-6 py-4 text-sm font-medium text-slate-900">{p.name}</td>
                   <td className="px-6 py-4 text-sm text-slate-600">
                     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${p.sex === 'Male' ? 'bg-blue-50 text-blue-700' :
-                        p.sex === 'Female' ? 'bg-pink-50 text-pink-700' :
-                          'bg-slate-100 text-slate-700'
+                      p.sex === 'Female' ? 'bg-pink-50 text-pink-700' :
+                        'bg-slate-100 text-slate-700'
                       }`}>
                       {p.sex}
                     </span>
@@ -300,8 +300,8 @@ export default function PatientList() {
                       <p className="text-xs font-mono text-slate-500 mt-0.5">{p.patientId}</p>
                     </div>
                     <span className={`px-2 py-1 rounded-md text-xs font-medium ${p.sex === 'Male' ? 'bg-blue-50 text-blue-700' :
-                        p.sex === 'Female' ? 'bg-pink-50 text-pink-700' :
-                          'bg-slate-100 text-slate-700'
+                      p.sex === 'Female' ? 'bg-pink-50 text-pink-700' :
+                        'bg-slate-100 text-slate-700'
                       }`}>
                       {p.sex}, {p.age}
                     </span>
@@ -359,8 +359,8 @@ export default function PatientList() {
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
             className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${page === 1
-                ? "text-slate-300 cursor-not-allowed"
-                : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+              ? "text-slate-300 cursor-not-allowed"
+              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
               }`}
           >
             <ChevronDown className="w-4 h-4 rotate-90" />
@@ -375,8 +375,8 @@ export default function PatientList() {
             onClick={() => setPage((p) => (p < totalPages ? p + 1 : p))}
             disabled={page === totalPages || totalPages === 0}
             className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${page === totalPages || totalPages === 0
-                ? "text-slate-300 cursor-not-allowed"
-                : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+              ? "text-slate-300 cursor-not-allowed"
+              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
               }`}
           >
             Next
@@ -396,6 +396,15 @@ export default function PatientList() {
           onCancel={() => { setShowViewModal(false); setViewPatient(null); }}
           confirmVariant="primary"
           size="lg"
+          extraActions={
+            <button
+              onClick={() => { setShowViewModal(false); navigate(`/prescriptions/new?patient=${viewPatient?._id}`); }}
+              className="px-3 py-2 rounded-md border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-sm font-medium flex items-center gap-2"
+            >
+              <FileText className="w-4 h-4" />
+              New Prescription
+            </button>
+          }
         >
           {viewPatient && (
             <PatientDetailsView patient={viewPatient} />

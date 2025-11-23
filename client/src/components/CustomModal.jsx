@@ -13,6 +13,7 @@ export default function CustomModal({
   showClose = true,
   size = "md", // sm | md | lg
   hideFooter = false,
+  extraActions,
 }) {
   useEffect(() => {
     const onKey = (e) => { if (open && e.key === "Escape") onCancel?.(); };
@@ -26,8 +27,8 @@ export default function CustomModal({
     confirmVariant === "danger"
       ? "bg-red-600 hover:bg-red-700 text-white"
       : confirmVariant === "primary"
-      ? "bg-slate-900 hover:bg-black text-white"
-      : "border bg-white hover:bg-slate-50";
+        ? "bg-slate-900 hover:bg-black text-white"
+        : "border bg-white hover:bg-slate-50";
 
   const maxWidthClass =
     size === "lg" ? "max-w-3xl" : size === "sm" ? "max-w-sm" : "max-w-md";
@@ -58,6 +59,7 @@ export default function CustomModal({
         </div>
         {!hideFooter && (
           <div className="flex justify-end gap-2 p-4 border-t bg-slate-50/60 flex-shrink-0">
+            {extraActions}
             <button
               onClick={onCancel}
               className="px-3 py-2 rounded-md border bg-white text-sm hover:bg-slate-50"
