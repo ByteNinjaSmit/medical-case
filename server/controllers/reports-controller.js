@@ -588,6 +588,234 @@ const getInvestigationAnalytics = async (req, res) => {
     }
 };
 
+// ============================
+// PATIENT-SPECIFIC DETAILED REPORT
+// ============================
+
+/**
+ * Get comprehensive report for a specific patient
+ * GET /api/reports/patient/:patientId
+ */
+const getPatientReport = async (req, res) => {
+    try {
+        const { patientId } = req.params;
+
+        // Fetch all patient-related data in parallel
+        const [
+            patient,
+            complaints,
+            prescriptions,
+            followUps,
+            investigations,
+            physicalCharacteristics,
+            digestion,
+            elimination,
+            sleepDreams,
+            history,
+        ] = await Promise.all([
+            Patient.findById(patientId),
+            Complaint.find({ patientId }).sort({ createdAt: -1 }),
+            Prescription.find({ patientId }).sort({ createdAt: -1 }),
+            FollowUp.find({ patientId }).sort({ createdAt: -1 }),
+            Investigation.find({ patientId }).sort({ date: -1 }),
+            PhysicalCharacteristics.findOne({ patient: patientId }),
+            Digestion.findOne({ patient: patientId }),
+            Elimination.findOne({ patient: patientId }),
+            SleepDreams.findOne({ patient: patientId }),
+            History.findOne({ patient: patientId }),
+        ]);
+
+        if (!patient) {
+            return res.status(404).json({
+                success: false,
+                message: "Patient not found"
+            });
+        }
+
+        // Calculate statistics
+        const stats = {
+            totalComplaints: complaints.length,
+            totalPrescriptions: prescriptions.length,
+            totalFollowUps: followUps.length,
+            totalInvestigations: investigations.length,
+            firstVisit: patient.createdAt,
+            lastVisit: followUps.length > 0 ? followUps[0].createdAt : patient.createdAt,
+            treatmentDuration: Math.floor((new Date() - new Date(patient.createdAt)) / (1000 * 60 * 60 * 24)),
+        };
+
+        // Create timeline
+        const timeline = [];
+        timeline.push({
+            type: "registration",
+            date: patient.createdAt,
+            title: "Patient Registered",
+            description: `${patient.name} registered in the system`,
+        });
+
+        complaints.forEach(complaint => {
+            timeline.push({
+                type: "complaint",
+                date: complaint.createdAt,
+                title: `Complaint #${complaint.complaintNo}`,
+                description: `${complaint.complaints?.length || 0} complaints recorded`,
+                data: complaint,
+            });
+        });
+
+        prescriptions.forEach(prescription => {
+            timeline.push({
+                type: "prescription",
+                date: prescription.createdAt,
+                title: "Prescription Issued",
+                description: `${prescription.medicines?.length || 0} medicines prescribed`,
+                data: prescription,
+            });
+        });
+
+        followUps.forEach(followUp => {
+            timeline.push({
+                type: "followup",
+                date: followUp.createdAt,
+                title: "Follow-up Visit",
+                description: `Patient state: ${followUp.patientState || "Not recorded"}`,
+                data: followUp,
+            });
+        });
+
+        investigations.forEach(investigation => {
+            timeline.push({
+                type: "investigation",
+                date: investigation.date || investigation.createdAt,
+                title: `Investigation: ${investigation.type || "General"}`,
+                description: investigation.summary || "Lab test conducted",
+                data: investigation,
+            });
+        });
+
+        timeline.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        // Analyze complaints
+        const complaintAnalysis = {
+            totalUniqueComplaints: 0,
+            commonComplaints: [],
+            severityDistribution: {},
+        };
+
+        const complaintMap = new Map();
+        complaints.forEach(c => {
+            c.complaints?.forEach(comp => {
+                if (comp.type) {
+                    complaintMap.set(comp.type, (complaintMap.get(comp.type) || 0) + 1);
+                }
+                if (comp.severity) {
+                    complaintAnalysis.severityDistribution[comp.severity] =
+                        (complaintAnalysis.severityDistribution[comp.severity] || 0) + 1;
+                }
+            });
+        });
+
+        complaintAnalysis.totalUniqueComplaints = complaintMap.size;
+        complaintAnalysis.commonComplaints = Array.from(complaintMap.entries())
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5)
+            .map(([type, count]) => ({ type, count }));
+
+        // Analyze prescriptions
+        const prescriptionAnalysis = {
+            totalMedicines: 0,
+            commonMedicines: [],
+        };
+
+        const medicineMap = new Map();
+        prescriptions.forEach(p => {
+            p.medicines?.forEach(med => {
+                if (med.name) {
+                    medicineMap.set(med.name, (medicineMap.get(med.name) || 0) + 1);
+                    prescriptionAnalysis.totalMedicines++;
+                }
+            });
+        });
+
+        prescriptionAnalysis.commonMedicines = Array.from(medicineMap.entries())
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 10)
+            .map(([name, count]) => ({ name, count }));
+
+        // Treatment progress
+        const treatmentProgress = {
+            improvementTrend: "stable",
+            outcomeNotes: [],
+        };
+
+        if (followUps.length > 0) {
+            const stateMap = { "Better": 3, "Same": 2, "Worse": 1 };
+            const states = followUps.map(f => stateMap[f.patientState] || 2);
+            const avgState = states.reduce((a, b) => a + b, 0) / states.length;
+
+            if (avgState > 2.3) treatmentProgress.improvementTrend = "improving";
+            else if (avgState < 1.7) treatmentProgress.improvementTrend = "declining";
+
+            treatmentProgress.outcomeNotes = followUps
+                .filter(f => f.notes)
+                .slice(0, 3)
+                .map(f => ({ date: f.createdAt, note: f.notes }));
+        }
+
+        // Case record summary
+        const caseRecordSummary = {
+            hasPhysicalCharacteristics: !!physicalCharacteristics,
+            hasDigestion: !!digestion,
+            hasElimination: !!elimination,
+            hasSleepDreams: !!sleepDreams,
+            hasHistory: !!history,
+            completionPercentage: 0,
+        };
+
+        const totalModules = 5;
+        const completedModules = [
+            physicalCharacteristics,
+            digestion,
+            elimination,
+            sleepDreams,
+            history,
+        ].filter(Boolean).length;
+
+        caseRecordSummary.completionPercentage = Math.round((completedModules / totalModules) * 100);
+
+        res.status(200).json({
+            success: true,
+            data: {
+                patient,
+                stats,
+                timeline,
+                complaints,
+                prescriptions,
+                followUps,
+                investigations,
+                complaintAnalysis,
+                prescriptionAnalysis,
+                treatmentProgress,
+                caseRecordSummary,
+                caseRecord: {
+                    physicalCharacteristics,
+                    digestion,
+                    elimination,
+                    sleepDreams,
+                    history,
+                },
+            }
+        });
+    } catch (error) {
+        console.error("Patient report error:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to fetch patient report",
+            error: error.message
+        });
+    }
+};
+
+
 module.exports = {
     getDashboardStats,
     getPatientAnalytics,
@@ -595,4 +823,5 @@ module.exports = {
     getPrescriptionAnalytics,
     getFollowUpAnalytics,
     getInvestigationAnalytics,
+    getPatientReport,
 };

@@ -17,4 +17,7 @@ router.route("/prescriptions").get(reportsController.getPrescriptionAnalytics);
 router.route("/followups").get(reportsController.getFollowUpAnalytics);
 router.route("/investigations").get(reportsController.getInvestigationAnalytics);
 
+// Patient-specific detailed report
+router.route("/patient/:patientId").get(reportsController.getPatientReport);
+
 module.exports = router;
