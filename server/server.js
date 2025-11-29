@@ -22,6 +22,7 @@ const errorMiddleware = require("./middlewares/error-middleware");
 const authRoutes = require("./routers/auth-router");
 const userRoutes = require('./routers/user-router');
 const prescriptionsRoutes = require('./routers/prescription-router');
+const reportsRoutes = require('./routers/reports-router');
 
 
 // Server Setup
@@ -76,6 +77,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth",authRoutes);
 app.use('/api/user',userRoutes)
 app.use('/api/prescriptions',prescriptionsRoutes)
+app.use('/api/reports', reportsRoutes);
 
 
 
