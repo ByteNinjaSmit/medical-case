@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/store/auth";
 import axios from "axios";
-import { User, Activity, Pill } from "lucide-react";
+import { User, Activity, Pill, ClipboardList } from "lucide-react";
 import PatientInfoCard from "./patient-details/PatientInfoCard";
 import ComplaintHistory from "./patient-details/ComplaintHistory";
 import PrescriptionHistory from "./patient-details/PrescriptionHistory";
@@ -62,6 +62,7 @@ export default function PatientDetailsView({ patient }) {
         { id: "overview", label: "Overview", icon: User },
         { id: "complaints", label: "Complaints", icon: Activity },
         { id: "prescriptions", label: "Prescriptions", icon: Pill },
+        { id: "case-modules", label: "Case Modules", icon: ClipboardList },
     ];
 
     return (
@@ -97,7 +98,147 @@ export default function PatientDetailsView({ patient }) {
                 {activeTab === "prescriptions" && (
                     <PrescriptionHistory prescriptions={prescriptions} loading={loading} />
                 )}
+
+                {activeTab === "case-modules" && (
+                    <CaseModulesStatus patient={patient} />
+                )}
             </div>
         </div>
     );
 }
+
+const CaseModulesStatus = ({ patient }) => {
+    const { API } = useAuth();
+    const [loading, setLoading] = useState(false);
+    const [modules, setModules] = useState({
+        physicalGenerals: null,
+        digestion: null,
+        elimination: null,
+        sleepDreams: null,
+        sexualFunction: null,
+        menstrualHistory: null,
+        history: null,
+        thermalModalities: null,
+        mentalGenerals: null,
+        investigationsCount: 0,
+        followupsCount: 0,
+    });
+
+    useEffect(() => {
+        if (!patient?._id || !API) return;
+        let cancelled = false;
+
+        const fetchModules = async () => {
+            setLoading(true);
+            try {
+                const pid = patient._id;
+                const [phys, dig, elim, sleep, sexual, menstrual, hist, thermal, mental, inv, fol] = await Promise.all([
+                    axios.get(`${API}/api/user/patients/${pid}/physical-generals`, { withCredentials: true }).catch(() => null),
+                    axios.get(`${API}/api/user/patients/${pid}/digestion`, { withCredentials: true }).catch(() => null),
+                    axios.get(`${API}/api/user/patients/${pid}/elimination`, { withCredentials: true }).catch(() => null),
+                    axios.get(`${API}/api/user/patients/${pid}/sleep-dreams`, { withCredentials: true }).catch(() => null),
+                    axios.get(`${API}/api/user/patients/${pid}/sexual-function`, { withCredentials: true }).catch(() => null),
+                    axios.get(`${API}/api/user/patients/${pid}/menstrual-history`, { withCredentials: true }).catch(() => null),
+                    axios.get(`${API}/api/user/patients/${pid}/history`, { withCredentials: true }).catch(() => null),
+                    axios.get(`${API}/api/user/patients/${pid}/thermal-modalities`, { withCredentials: true }).catch(() => null),
+                    axios.get(`${API}/api/user/patients/${pid}/mental-generals`, { withCredentials: true }).catch(() => null),
+                    axios.get(`${API}/api/user/patients/${pid}/investigations`, { withCredentials: true }).catch(() => null),
+                    axios.get(`${API}/api/user/patients/${pid}/followups`, { withCredentials: true }).catch(() => null),
+                ]);
+
+                if (cancelled) return;
+
+                const getSingle = (res) => (res && (res.data?.data || res.data)) || null;
+                const getListCount = (res) => {
+                    if (!res) return 0;
+                    const data = res.data;
+                    if (Array.isArray(data)) return data.length;
+                    if (Array.isArray(data?.data)) return data.data.length;
+                    if (Array.isArray(data?.items)) return data.items.length;
+                    return 0;
+                };
+
+                setModules({
+                    physicalGenerals: getSingle(phys),
+                    digestion: getSingle(dig),
+                    elimination: getSingle(elim),
+                    sleepDreams: getSingle(sleep),
+                    sexualFunction: getSingle(sexual),
+                    menstrualHistory: getSingle(menstrual),
+                    history: getSingle(hist),
+                    thermalModalities: getSingle(thermal),
+                    mentalGenerals: getSingle(mental),
+                    investigationsCount: getListCount(inv),
+                    followupsCount: getListCount(fol),
+                });
+            } catch {
+                if (!cancelled) {
+                    setModules((m) => ({ ...m }));
+                }
+            } finally {
+                if (!cancelled) {
+                    setLoading(false);
+                }
+            }
+        };
+
+        fetchModules();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [API, patient?._id]);
+
+    const items = [
+        { key: "physicalGenerals", label: "Physical Generals", type: "single" },
+        { key: "digestion", label: "Digestion", type: "single" },
+        { key: "elimination", label: "Elimination", type: "single" },
+        { key: "sleepDreams", label: "Sleep & Dreams", type: "single" },
+        { key: "sexualFunction", label: "Sexual / Function", type: "single" },
+        { key: "menstrualHistory", label: "Menstrual History", type: "single" },
+        { key: "history", label: "Past / Family / Personal History", type: "single" },
+        { key: "thermalModalities", label: "Thermal Modalities", type: "single" },
+        { key: "mentalGenerals", label: "Mental Generals", type: "single" },
+        { key: "investigationsCount", label: "Investigations", type: "count" },
+        { key: "followupsCount", label: "Follow-ups", type: "count" },
+    ];
+
+    const getStatus = (item) => {
+        if (item.type === "single") {
+            return modules[item.key] ? "Recorded" : "Not recorded";
+        }
+        const count = modules[item.key];
+        return count > 0 ? `${count} records` : "No records";
+    };
+
+    return (
+        <div className="space-y-3">
+            {loading && (
+                <div className="text-xs text-slate-500 mb-1">Loading case module summary...</div>
+            )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {items.map((item) => (
+                    <div
+                        key={item.key}
+                        className="border border-slate-200 rounded-lg px-3 py-2.5 bg-slate-50/60 flex items-center justify-between text-xs sm:text-sm"
+                    >
+                        <div className="text-slate-700 font-medium mr-3">{item.label}</div>
+                        <div
+                            className={`text-xs font-semibold px-2 py-1 rounded-full whitespace-nowrap ${
+                                item.type === "single"
+                                    ? modules[item.key]
+                                        ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
+                                        : "bg-slate-50 text-slate-600 border border-slate-200"
+                                    : modules[item.key] > 0
+                                    ? "bg-blue-50 text-blue-700 border border-blue-100"
+                                    : "bg-slate-50 text-slate-600 border border-slate-200"
+                            }`}
+                        >
+                            {getStatus(item)}
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};

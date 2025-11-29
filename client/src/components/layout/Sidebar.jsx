@@ -9,8 +9,8 @@ const MODULES = [
     id: 'dashboard',
     name: 'Dashboard',
     icon: <Activity className="w-5 h-5" />,
-    href: '/',
-    description: 'Clinical overview & quick actions',
+    href: '/dashboard',
+    description: 'Analytics & clinical BI overview',
   },
   {
     id: 'patient',
@@ -33,20 +33,11 @@ const MODULES = [
     description: 'Complaint management',
   },
   {
-    id: 'prescriptions',
-    name: 'Prescriptions',
-    icon: <Pill className="w-5 h-5" />,
-    subModules: [
-      { name: 'Prescription History', icon: <List className="w-5 h-5" />, href: '/patients', description: 'Open a patient case to view prescriptions' },
-    ],
-    description: 'Prescription records',
-  },
-  {
-    id: 'case-record',
-    name: 'Case Record',
-    icon: <ClipboardList className="w-5 h-5" />,
-    href: '/patients',
-    description: 'Per-patient modules: physical generals, digestion, elimination, sleep, sexual/menses, history, thermal, investigations, follow-ups',
+    id: 'reports',
+    name: 'Reports',
+    icon: <FileText className="w-5 h-5" />,
+    href: '/reports',
+    description: 'Structured clinical and operational reports',
   },
 ];
 
