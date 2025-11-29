@@ -1,28 +1,52 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Search, ChevronRight, ChevronDown, Users, List, Plus, User, LogOut, Shield } from 'lucide-react';
+import { Search, ChevronRight, ChevronDown, Users, List, Plus, User, LogOut, Shield, Activity, FileText, Pill, ClipboardList } from 'lucide-react';
 import { useAuth } from '@/store/auth';
 import { GiDrop } from "react-icons/gi";
 
 const MODULES = [
   {
+    id: 'dashboard',
+    name: 'Dashboard',
+    icon: <Activity className="w-5 h-5" />,
+    href: '/',
+    description: 'Clinical overview & quick actions',
+  },
+  {
     id: 'patient',
-    name: 'Patient',
+    name: 'Patients',
     icon: <Users className="w-5 h-5" />,
     subModules: [
       { name: 'New Patient', icon: <Plus className="w-5 h-5" />, href: '/patients/new', description: 'Register new patient' },
-      { name: 'Patient List', icon: <List className="w-5 h-5" />, href: '/patients', description: 'View all patients' },
+      { name: 'Patient List', icon: <List className="w-5 h-5" />, href: '/patients', description: 'View all patients & open cases' },
     ],
     description: 'Patient management',
   },
   {
     id: 'complaint',
-    name: 'Complaint',
-    icon: <List className="w-5 h-5" />,
+    name: 'Complaints',
+    icon: <FileText className="w-5 h-5" />,
     subModules: [
-      { name: 'Complaint List', icon: <List className="w-5 h-5" />, href: '/complaints', description: 'View complaints by patient' },
+      { name: 'New Complaint', icon: <Plus className="w-5 h-5" />, href: '/complaints/new', description: 'Record new complaint for a patient' },
+      { name: 'Complaint List', icon: <List className="w-5 h-5" />, href: '/complaints', description: 'Review all complaints' },
     ],
     description: 'Complaint management',
+  },
+  {
+    id: 'prescriptions',
+    name: 'Prescriptions',
+    icon: <Pill className="w-5 h-5" />,
+    subModules: [
+      { name: 'Prescription History', icon: <List className="w-5 h-5" />, href: '/patients', description: 'Open a patient case to view prescriptions' },
+    ],
+    description: 'Prescription records',
+  },
+  {
+    id: 'case-record',
+    name: 'Case Record',
+    icon: <ClipboardList className="w-5 h-5" />,
+    href: '/patients',
+    description: 'Per-patient modules: physical generals, digestion, elimination, sleep, sexual/menses, history, thermal, investigations, follow-ups',
   },
 ];
 

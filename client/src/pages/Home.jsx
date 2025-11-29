@@ -1,15 +1,94 @@
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
+import axios from "axios"
 // import SidebarDemo from "@/components/SidebarDemo"
 import { Users, Heart, Shield, Database, Smartphone, CheckCircle, Award, FileText, Plus, List } from "lucide-react"
 import { GiDrop } from "react-icons/gi";
+import { useAuth } from "@/store/auth";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 export default function HomePage() {
+  const { API } = useAuth();
   const [mounted, setMounted] = useState(false)
+
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [statsError, setStatsError] = useState("");
+  const [stats, setStats] = useState({
+    totalPatients: 0,
+    newPatients7d: 0,
+    totalComplaints: 0,
+    newComplaints7d: 0,
+  });
+  const [recentPatients, setRecentPatients] = useState([]);
+  const [recentComplaints, setRecentComplaints] = useState([]);
 
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  useEffect(() => {
+    if (!API) return;
+    let isCancelled = false;
+
+    const fetchStats = async () => {
+      setStatsLoading(true);
+      setStatsError("");
+      try {
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        const dateFrom = sevenDaysAgo.toISOString().slice(0, 10);
+
+        const [patientsRes, patientsNewRes, complaintsRes, complaintsNewRes] = await Promise.all([
+          axios.get(`${API}/api/user/patients`, {
+            params: { page: 1, limit: 5, sortBy: "createdAt", order: "desc" },
+            withCredentials: true,
+          }),
+          axios.get(`${API}/api/user/patients`, {
+            params: { page: 1, limit: 1, dateFrom },
+            withCredentials: true,
+          }),
+          axios.get(`${API}/api/user/complaints`, {
+            params: { page: 1, limit: 5, sortBy: "createdAt", order: "desc" },
+            withCredentials: true,
+          }),
+          axios.get(`${API}/api/user/complaints`, {
+            params: { page: 1, limit: 1, dateFrom },
+            withCredentials: true,
+          }),
+        ]);
+
+        if (isCancelled) return;
+
+        const patientsData = patientsRes.data;
+        const patientsNewData = patientsNewRes.data;
+        const complaintsData = complaintsRes.data;
+        const complaintsNewData = complaintsNewRes.data;
+
+        setStats({
+          totalPatients: patientsData?.pagination?.totalFiltered ?? patientsData?.pagination?.total ?? 0,
+          newPatients7d: patientsNewData?.pagination?.totalFiltered ?? patientsNewData?.pagination?.total ?? 0,
+          totalComplaints: complaintsData?.pagination?.totalFiltered ?? complaintsData?.pagination?.total ?? 0,
+          newComplaints7d: complaintsNewData?.pagination?.totalFiltered ?? complaintsNewData?.pagination?.total ?? 0,
+        });
+
+        setRecentPatients(Array.isArray(patientsData?.data) ? patientsData.data : []);
+        setRecentComplaints(Array.isArray(complaintsData?.data) ? complaintsData.data : []);
+      } catch (e) {
+        if (isCancelled) return;
+        setStatsError(e?.response?.data?.message || e.message || "Failed to load dashboard stats");
+      } finally {
+        if (!isCancelled) {
+          setStatsLoading(false);
+        }
+      }
+    };
+
+    fetchStats();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [API]);
 
   const bloodBankCapabilities = [
     {
@@ -77,6 +156,174 @@ export default function HomePage() {
               Record patient data, manage complaints, and streamline homeopathic case taking with secure, fast tools.
             </p>
           </div>
+        </div>
+
+        {/* Dashboard Summary */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6 mb-10">
+          <Card className="col-span-1 md:col-span-2 shadow-md border-orange-100 bg-white/90">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center justify-between text-sm md:text-base">
+                <span>Total Patients</span>
+                <Users className="w-4 h-4 text-orange-700" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold text-red-800">
+                {statsLoading ? "..." : stats.totalPatients}
+              </p>
+              <p className="text-xs text-slate-500 mt-1">
+                Last 7 days:{" "}
+                <span className="font-semibold text-slate-700">
+                  {statsLoading ? "..." : stats.newPatients7d}
+                </span>
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="col-span-1 md:col-span-2 shadow-md border-blue-100 bg-white/90">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center justify-between text-sm md:text-base">
+                <span>Total Complaints</span>
+                <FileText className="w-4 h-4 text-blue-700" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold text-red-800">
+                {statsLoading ? "..." : stats.totalComplaints}
+              </p>
+              <p className="text-xs text-slate-500 mt-1">
+                Last 7 days:{" "}
+                <span className="font-semibold text-slate-700">
+                  {statsLoading ? "..." : stats.newComplaints7d}
+                </span>
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {statsError && (
+          <div className="mb-6 text-xs md:text-sm text-red-100 bg-red-900/60 border border-red-500/60 rounded-xl px-3 py-2">
+            {statsError}
+          </div>
+        )}
+
+        {/* Quick Actions & Recent Activity */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
+          <Card className="shadow-md border-red-100 bg-red-50/60">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm md:text-base text-red-900">
+                Quick Actions
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 mt-2">
+              <div className="grid grid-cols-2 gap-3">
+                <Link
+                  to="/patients/new"
+                  className="flex flex-col items-center justify-center rounded-xl bg-white/80 border border-red-100 px-3 py-3 text-xs md:text-sm text-red-800 hover:bg-red-50 hover:border-red-200 transition-colors"
+                >
+                  <Plus className="w-4 h-4 mb-1" />
+                  New Patient
+                </Link>
+                <Link
+                  to="/patients"
+                  className="flex flex-col items-center justify-center rounded-xl bg-white/80 border border-red-100 px-3 py-3 text-xs md:text-sm text-red-800 hover:bg-red-50 hover:border-red-200 transition-colors"
+                >
+                  <Users className="w-4 h-4 mb-1" />
+                  Patient List
+                </Link>
+                <Link
+                  to="/complaints/new"
+                  className="flex flex-col items-center justify-center rounded-xl bg-white/80 border border-blue-100 px-3 py-3 text-xs md:text-sm text-blue-800 hover:bg-blue-50 hover:border-blue-200 transition-colors"
+                >
+                  <Plus className="w-4 h-4 mb-1" />
+                  New Complaint
+                </Link>
+                <Link
+                  to="/complaints"
+                  className="flex flex-col items-center justify-center rounded-xl bg-white/80 border border-blue-100 px-3 py-3 text-xs md:text-sm text-blue-800 hover:bg-blue-50 hover:border-blue-200 transition-colors"
+                >
+                  <List className="w-4 h-4 mb-1" />
+                  Complaint List
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-md border-slate-200 lg:col-span-1 bg-white/95">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm md:text-base flex items-center gap-2">
+                <Users className="w-4 h-4 text-slate-600" />
+                Recent Patients
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="mt-1 space-y-2 max-h-60 overflow-y-auto pr-1">
+              {statsLoading ? (
+                <p className="text-xs text-slate-500">Loading patients...</p>
+              ) : recentPatients.length === 0 ? (
+                <p className="text-xs text-slate-500">No patients yet.</p>
+              ) : (
+                recentPatients.map((p) => (
+                  <div
+                    key={p._id}
+                    className="flex items-center justify-between rounded-lg border border-slate-100 bg-white/80 px-3 py-2 text-xs"
+                  >
+                    <div className="min-w-0">
+                      <p className="font-semibold text-slate-900 truncate">
+                        {p.name}
+                      </p>
+                      <p className="text-[11px] text-slate-500">
+                        {p.patientId}
+                      </p>
+                    </div>
+                    <span className="ml-2 text-[11px] text-slate-500">
+                      {p.createdAt
+                        ? new Date(p.createdAt).toLocaleDateString()
+                        : ""}
+                    </span>
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-md border-slate-200 lg:col-span-1 bg-white/95">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm md:text-base flex items-center gap-2">
+                <FileText className="w-4 h-4 text-slate-600" />
+                Recent Complaints
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="mt-1 space-y-2 max-h-60 overflow-y-auto pr-1">
+              {statsLoading ? (
+                <p className="text-xs text-slate-500">Loading complaints...</p>
+              ) : recentComplaints.length === 0 ? (
+                <p className="text-xs text-slate-500">No complaints yet.</p>
+              ) : (
+                recentComplaints.map((c) => (
+                  <div
+                    key={c._id}
+                    className="rounded-lg border border-slate-100 bg-white/80 px-3 py-2 text-xs"
+                  >
+                    <p className="font-semibold text-slate-900 line-clamp-1">
+                      {c.complaintText}
+                    </p>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      {c?.patient?.patientId
+                        ? `${c.patient.patientId} – ${c.patient.name}`
+                        : "Unlinked patient"}
+                    </p>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      {c.visitDate
+                        ? new Date(c.visitDate).toLocaleDateString()
+                        : c.createdAt
+                        ? new Date(c.createdAt).toLocaleDateString()
+                        : ""}
+                    </p>
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         {/* Blood Bank Capabilities Grid */}

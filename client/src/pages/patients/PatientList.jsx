@@ -77,11 +77,10 @@ export default function PatientList() {
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="bg-slate-50 border-b border-slate-200">
+            <tr className="bg-slate-50/50 border-b border-slate-200">
               <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Patient ID</th>
               <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Name</th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Sex</th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Age</th>
+              <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Sex / Age</th>
               <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Address</th>
               <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Created</th>
               <th className="px-6 py-4 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
@@ -93,48 +92,58 @@ export default function PatientList() {
                 <tr key={`sk_${idx}`} className="animate-pulse">
                   <td className="px-6 py-4"><div className="h-4 bg-slate-100 rounded w-28" /></td>
                   <td className="px-6 py-4"><div className="h-4 bg-slate-100 rounded w-40" /></td>
-                  <td className="px-6 py-4"><div className="h-4 bg-slate-100 rounded w-16" /></td>
-                  <td className="px-6 py-4"><div className="h-4 bg-slate-100 rounded w-10" /></td>
+                  <td className="px-6 py-4"><div className="h-4 bg-slate-100 rounded w-20" /></td>
                   <td className="px-6 py-4"><div className="h-4 bg-slate-100 rounded w-48" /></td>
                   <td className="px-6 py-4"><div className="h-4 bg-slate-100 rounded w-24" /></td>
-                  <td className="px-6 py-4"><div className="h-8 bg-slate-100 rounded w-24 ml-auto" /></td>
+                  <td className="px-6 py-4"><div className="h-8 bg-slate-100 rounded w-32 ml-auto" /></td>
                 </tr>
               ))
             ) : patients?.length ? (
               patients.map((p) => (
-                <tr key={p._id} className="hover:bg-slate-50 transition-colors group">
-                  <td className="px-6 py-4 text-sm font-medium text-slate-900">{p.patientId}</td>
-                  <td className="px-6 py-4 text-sm font-medium text-slate-900">{p.name}</td>
-                  <td className="px-6 py-4 text-sm text-slate-600">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${p.sex === 'Male' ? 'bg-blue-50 text-blue-700' :
-                      p.sex === 'Female' ? 'bg-pink-50 text-pink-700' :
-                        'bg-slate-100 text-slate-700'
+                <tr key={p._id} className="hover:bg-slate-50/80 transition-colors group">
+                  <td className="px-6 py-4 text-sm font-medium text-slate-900 whitespace-nowrap">{p.patientId}</td>
+                  <td className="px-6 py-4 text-sm font-medium text-slate-900">
+                    {p.name}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-slate-600 whitespace-nowrap">
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${p.sex === 'Male' ? 'bg-blue-50 text-blue-700 border border-blue-100' :
+                      p.sex === 'Female' ? 'bg-pink-50 text-pink-700 border border-pink-100' :
+                        'bg-slate-100 text-slate-700 border border-slate-200'
                       }`}>
                       {p.sex}
                     </span>
+                    <span className="ml-2 text-slate-500">{p.age} yrs</span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-slate-600">{p.age}</td>
                   <td className="px-6 py-4 text-sm text-slate-600 max-w-xs truncate" title={p.address}>{p.address || "-"}</td>
-                  <td className="px-6 py-4 text-sm text-slate-600">{new Date(p.createdAt).toLocaleDateString()}</td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <td className="px-6 py-4 text-sm text-slate-600 whitespace-nowrap">{new Date(p.createdAt).toLocaleDateString()}</td>
+                  <td className="px-6 py-4 text-right whitespace-nowrap">
+                    <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => navigate(`/patients/${p._id}/case`)}
+                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-colors"
+                        title="Open Case"
+                      >
+                        <Activity className="w-3.5 h-3.5" />
+                        Case
+                      </button>
+                      <div className="h-4 w-px bg-slate-200 mx-1"></div>
                       <button
                         onClick={() => handleView(p)}
-                        className="p-2 rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors"
-                        title="View Details"
+                        className="p-1.5 rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors"
+                        title="Quick View"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleAddComplaint(p)}
-                        className="p-2 rounded-full text-red-600 hover:bg-red-50 transition-colors"
+                        className="p-1.5 rounded-md text-red-600 hover:bg-red-50 transition-colors"
                         title="Add Complaint"
                       >
                         <Plus className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => navigate(`/prescriptions/new?patient=${p._id}`)}
-                        className="p-2 rounded-full text-emerald-600 hover:bg-emerald-50 transition-colors"
+                        className="p-1.5 rounded-md text-emerald-600 hover:bg-emerald-50 transition-colors"
                         title="Add Prescription"
                       >
                         <FileText className="w-4 h-4" />
@@ -145,9 +154,11 @@ export default function PatientList() {
               ))
             ) : (
               <tr>
-                <td className="px-6 py-12 text-center text-slate-500" colSpan={7}>
+                <td className="px-6 py-12 text-center text-slate-500" colSpan={6}>
                   <div className="flex flex-col items-center justify-center">
-                    <User className="w-12 h-12 text-slate-300 mb-3" />
+                    <div className="bg-slate-50 p-4 rounded-full mb-3">
+                      <User className="w-8 h-8 text-slate-300" />
+                    </div>
                     <p className="text-lg font-medium text-slate-900">No patients found</p>
                     <p className="text-sm text-slate-500">Try adjusting your search or filters</p>
                   </div>
@@ -158,7 +169,7 @@ export default function PatientList() {
         </table>
       </div>
     </div>
-  ), [loading, patients]);
+  ), [loading, patients, navigate]);
 
   return (
     <div className="min-h-screen bg-slate-50/50">
@@ -167,7 +178,7 @@ export default function PatientList() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-red-50 rounded-lg">
+              <div className="p-2 bg-red-50 rounded-lg border border-red-100">
                 <User className="w-6 h-6 text-red-600" />
               </div>
               <div>
@@ -177,7 +188,7 @@ export default function PatientList() {
             </div>
             <button
               onClick={() => navigate('/patients/new')}
-              className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm hover:shadow"
+              className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm hover:shadow active:scale-95"
             >
               <Plus className="w-4 h-4" />
               <span className="hidden sm:inline">New Patient</span>
@@ -189,7 +200,10 @@ export default function PatientList() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Filters Section */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 mb-6 overflow-hidden">
-          <div className="p-4 border-b border-slate-100 flex items-center justify-between lg:hidden" onClick={() => setShowFilters(!showFilters)}>
+          <div
+            className="p-4 border-b border-slate-100 flex items-center justify-between lg:hidden cursor-pointer hover:bg-slate-50 transition-colors"
+            onClick={() => setShowFilters(!showFilters)}
+          >
             <div className="flex items-center gap-2 text-slate-700 font-medium">
               <Filter className="w-4 h-4" />
               Filters
@@ -207,7 +221,7 @@ export default function PatientList() {
                     value={search}
                     onChange={(e) => { setSearch(e.target.value); setPage(1); }}
                     placeholder="Search by ID, name, address..."
-                    className="w-full h-10 pl-9 pr-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all"
+                    className="w-full h-10 pl-9 pr-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all placeholder:text-slate-400"
                   />
                 </div>
               </div>
@@ -217,7 +231,7 @@ export default function PatientList() {
                 <select
                   value={sex}
                   onChange={(e) => { setSex(e.target.value); setPage(1); }}
-                  className="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all appearance-none"
+                  className="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all appearance-none cursor-pointer"
                 >
                   <option value="">All Genders</option>
                   <option value="Male">Male</option>
@@ -233,7 +247,7 @@ export default function PatientList() {
                     type="date"
                     value={dateFrom}
                     onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
-                    className="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all"
+                    className="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all cursor-pointer"
                   />
                 </div>
                 <div>
@@ -242,7 +256,7 @@ export default function PatientList() {
                     type="date"
                     value={dateTo}
                     onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
-                    className="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all"
+                    className="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all cursor-pointer"
                   />
                 </div>
               </div>
@@ -250,7 +264,7 @@ export default function PatientList() {
               <div className="lg:col-span-2 flex gap-2">
                 <button
                   onClick={() => { setSearch(""); setSex(""); setOrder("desc"); setSortBy("createdAt"); setDateFrom(""); setDateTo(""); setPage(1); }}
-                  className="h-10 px-4 w-full bg-white border border-slate-200 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                  className="h-10 px-4 w-full bg-white border border-slate-200 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-50 hover:text-slate-900 transition-colors active:bg-slate-100"
                 >
                   Reset
                 </button>
@@ -264,7 +278,7 @@ export default function PatientList() {
                 <select
                   value={order}
                   onChange={(e) => setOrder(e.target.value)}
-                  className="bg-transparent font-medium text-slate-700 focus:outline-none"
+                  className="bg-transparent font-medium text-slate-700 focus:outline-none cursor-pointer hover:text-slate-900"
                 >
                   <option value="desc">Newest First</option>
                   <option value="asc">Oldest First</option>
@@ -292,16 +306,16 @@ export default function PatientList() {
             ))
           ) : patients.length > 0 ? (
             patients.map((p) => (
-              <div key={p._id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden active:scale-[0.99] transition-transform duration-100">
+              <div key={p._id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <div className="p-4">
                   <div className="flex justify-between items-start mb-3">
                     <div>
                       <h3 className="font-semibold text-slate-900">{p.name}</h3>
                       <p className="text-xs font-mono text-slate-500 mt-0.5">{p.patientId}</p>
                     </div>
-                    <span className={`px-2 py-1 rounded-md text-xs font-medium ${p.sex === 'Male' ? 'bg-blue-50 text-blue-700' :
-                      p.sex === 'Female' ? 'bg-pink-50 text-pink-700' :
-                        'bg-slate-100 text-slate-700'
+                    <span className={`px-2 py-1 rounded-md text-xs font-medium ${p.sex === 'Male' ? 'bg-blue-50 text-blue-700 border border-blue-100' :
+                      p.sex === 'Female' ? 'bg-pink-50 text-pink-700 border border-pink-100' :
+                        'bg-slate-100 text-slate-700 border border-slate-200'
                       }`}>
                       {p.sex}, {p.age}
                     </span>
@@ -318,27 +332,27 @@ export default function PatientList() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2 pt-3 border-t border-slate-100">
+                  <div className="grid grid-cols-2 gap-2 pt-3 border-t border-slate-100">
+                    <button
+                      onClick={() => navigate(`/patients/${p._id}/case`)}
+                      className="col-span-2 flex items-center justify-center gap-2 py-2 text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors border border-indigo-100"
+                    >
+                      <Activity className="w-4 h-4" />
+                      Open Case Record
+                    </button>
                     <button
                       onClick={() => handleView(p)}
-                      className="flex flex-col items-center justify-center gap-1 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 rounded-lg transition-colors"
+                      className="flex items-center justify-center gap-2 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 rounded-lg transition-colors border border-slate-100"
                     >
-                      <Eye className="w-4 h-4" />
-                      View
+                      <Eye className="w-3.5 h-3.5" />
+                      Quick View
                     </button>
                     <button
                       onClick={() => handleAddComplaint(p)}
-                      className="flex flex-col items-center justify-center gap-1 py-2 text-xs font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      className="flex items-center justify-center gap-2 py-2 text-xs font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-red-100"
                     >
-                      <Plus className="w-4 h-4" />
-                      Add
-                    </button>
-                    <button
-                      onClick={() => navigate(`/prescriptions/new?patient=${p._id}`)}
-                      className="flex flex-col items-center justify-center gap-1 py-2 text-xs font-medium text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
-                    >
-                      <FileText className="w-4 h-4" />
-                      Rx+
+                      <Plus className="w-3.5 h-3.5" />
+                      Complaint
                     </button>
                   </div>
                 </div>
@@ -400,7 +414,7 @@ export default function PatientList() {
             <div className="flex flex-col sm:flex-row flex-wrap gap-2 w-full sm:w-auto">
               <button
                 onClick={() => { setShowViewModal(false); navigate(`/patients/${viewPatient?._id}/case`); }}
-                className="px-3 py-2 rounded-md border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 text-sm font-medium flex items-center gap-2 w-full sm:w-auto justify-center"
+                className="px-3 py-2 rounded-md border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 text-sm font-medium flex items-center gap-2 w-full sm:w-auto justify-center"
               >
                 <Activity className="w-4 h-4" />
                 Open Full Case
