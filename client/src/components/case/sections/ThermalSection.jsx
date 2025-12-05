@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { ThermometerSun, Save, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 
 const ThermalSection = ({ patientId }) => {
     const { API } = useAuth();
@@ -58,7 +59,9 @@ const ThermalSection = ({ patientId }) => {
                     });
                 }
             } catch (e) {
-                setError(e?.response?.data?.message || e.message || "Failed to load thermal modalities");
+                const msg = e?.response?.data?.message || e.message || "Failed to load thermal modalities";
+                setError(msg);
+                toast.error(msg);
             } finally {
                 setLoading(false);
             }
@@ -82,9 +85,13 @@ const ThermalSection = ({ patientId }) => {
                 form,
                 { withCredentials: true }
             );
-            setMessage("Thermal modalities saved successfully.");
+            const msg = "Thermal modalities saved successfully.";
+            setMessage(msg);
+            toast.success(msg);
         } catch (e) {
-            setError(e?.response?.data?.message || e.message || "Failed to save thermal modalities");
+            const msg = e?.response?.data?.message || e.message || "Failed to save thermal modalities";
+            setError(msg);
+            toast.error(msg);
         } finally {
             setSaving(false);
         }

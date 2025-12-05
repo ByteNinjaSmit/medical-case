@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Microscope, Plus, FileText, Trash2, Edit2, Calendar } from "lucide-react";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 const InvestigationsSection = ({ patientId }) => {
     const { API } = useAuth();
@@ -41,7 +42,9 @@ const InvestigationsSection = ({ patientId }) => {
             });
             setInvestigations(res?.data?.data || []);
         } catch (e) {
-            setError("Failed to load investigations");
+            const msg = e?.response?.data?.message || e.message || "Failed to load investigations";
+            setError(msg);
+            toast.error(msg);
         } finally {
             setLoading(false);
         }
@@ -110,13 +113,16 @@ const InvestigationsSection = ({ patientId }) => {
         try {
             if (currentInv) {
                 await axios.put(`${API}/api/user/investigations/${currentInv._id}`, formData, { withCredentials: true });
+                toast.success("Investigation updated successfully.");
             } else {
                 await axios.post(`${API}/api/user/patients/${patientId}/investigations`, formData, { withCredentials: true });
+                toast.success("Investigation created successfully.");
             }
             setIsDialogOpen(false);
             fetchInvestigations();
         } catch (e) {
-            alert("Failed to save investigation");
+            const msg = e?.response?.data?.message || e.message || "Failed to save investigation";
+            toast.error(msg);
         } finally {
             setSaving(false);
         }
@@ -127,8 +133,10 @@ const InvestigationsSection = ({ patientId }) => {
         try {
             await axios.delete(`${API}/api/user/investigations/${id}`, { withCredentials: true });
             fetchInvestigations();
+            toast.success("Investigation deleted successfully.");
         } catch (e) {
-            alert("Failed to delete investigation");
+            const msg = e?.response?.data?.message || e.message || "Failed to delete investigation";
+            toast.error(msg);
         }
     };
 

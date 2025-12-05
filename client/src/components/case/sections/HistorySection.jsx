@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { History, Save, AlertCircle, Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 const HistorySection = ({ patientId }) => {
     const { API } = useAuth();
@@ -78,7 +79,9 @@ const HistorySection = ({ patientId }) => {
                     });
                 }
             } catch (e) {
-                setError(e?.response?.data?.message || e.message || "Failed to load history");
+                const msg = e?.response?.data?.message || e.message || "Failed to load history";
+                setError(msg);
+                toast.error(msg);
             } finally {
                 setLoading(false);
             }
@@ -148,9 +151,13 @@ const HistorySection = ({ patientId }) => {
                 form,
                 { withCredentials: true }
             );
-            setMessage("History saved successfully.");
+            const msg = "History saved successfully.";
+            setMessage(msg);
+            toast.success(msg);
         } catch (e) {
-            setError(e?.response?.data?.message || e.message || "Failed to save history");
+            const msg = e?.response?.data?.message || e.message || "Failed to save history";
+            setError(msg);
+            toast.error(msg);
         } finally {
             setSaving(false);
         }

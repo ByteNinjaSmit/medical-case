@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { CalendarClock, Plus, Edit2, Trash2, Calendar } from "lucide-react";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 const FollowUpSection = ({ patientId }) => {
     const { API } = useAuth();
@@ -37,7 +38,9 @@ const FollowUpSection = ({ patientId }) => {
             const res = await axios.get(`${API}/api/user/patients/${patientId}/followups`, { withCredentials: true });
             setFollowUps(res?.data?.data || []);
         } catch (e) {
-            console.error("Failed to load follow-ups");
+            const msg = e?.response?.data?.message || e.message || "Failed to load follow-ups";
+            console.error("Failed to load follow-ups", e);
+            toast.error(msg);
         } finally {
             setLoading(false);
         }
@@ -85,13 +88,16 @@ const FollowUpSection = ({ patientId }) => {
         try {
             if (currentFollowUp) {
                 await axios.put(`${API}/api/user/followups/${currentFollowUp._id}`, formData, { withCredentials: true });
+                toast.success("Follow-up updated successfully.");
             } else {
                 await axios.post(`${API}/api/user/patients/${patientId}/followups`, formData, { withCredentials: true });
+                toast.success("Follow-up created successfully.");
             }
             setIsDialogOpen(false);
             fetchFollowUps();
         } catch (e) {
-            alert("Failed to save follow-up");
+            const msg = e?.response?.data?.message || e.message || "Failed to save follow-up";
+            toast.error(msg);
         } finally {
             setSaving(false);
         }
@@ -102,8 +108,10 @@ const FollowUpSection = ({ patientId }) => {
         try {
             await axios.delete(`${API}/api/user/followups/${id}`, { withCredentials: true });
             fetchFollowUps();
+            toast.success("Follow-up deleted successfully.");
         } catch (e) {
-            alert("Failed to delete follow-up");
+            const msg = e?.response?.data?.message || e.message || "Failed to delete follow-up";
+            toast.error(msg);
         }
     };
 

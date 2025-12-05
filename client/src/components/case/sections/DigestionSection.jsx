@@ -10,6 +10,7 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Utensils, Save, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 
 const cravingOptions = ["Sweet", "Salty", "Spicy", "Sour", "Eggs", "Milk", "Fried", "Cold Drinks"];
 const aversionOptions = ["Milk", "Oil/Fats", "Rice", "Spices", "Sweets", "Warm Food", "Cold Food"];
@@ -80,7 +81,9 @@ const DigestionSection = ({ patientId }) => {
           });
         }
       } catch (e) {
-        setError(e?.response?.data?.message || e.message || "Failed to load digestion section");
+        const msg = e?.response?.data?.message || e.message || "Failed to load digestion section";
+        setError(msg);
+        toast.error(msg);
       } finally {
         setLoading(false);
       }
@@ -143,13 +146,17 @@ const DigestionSection = ({ patientId }) => {
         payload,
         { withCredentials: true }
       );
-      setMessage("Digestion details saved successfully.");
+      const msg = "Digestion details saved successfully.";
+      setMessage(msg);
+      toast.success(msg);
       const data = res?.data?.data;
       if (data && typeof data.thirstLevel === "number") {
         setForm((prev) => ({ ...prev, thirstLevel: data.thirstLevel }));
       }
     } catch (e) {
-      setError(e?.response?.data?.message || e.message || "Failed to save digestion section");
+      const msg = e?.response?.data?.message || e.message || "Failed to save digestion section";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setSaving(false);
     }

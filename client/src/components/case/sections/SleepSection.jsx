@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Trash2, Plus, Save, AlertCircle, Moon } from "lucide-react";
+import { toast } from "sonner";
 
 const SleepSection = ({ patientId }) => {
     const { API } = useAuth();
@@ -49,7 +50,9 @@ const SleepSection = ({ patientId }) => {
                     });
                 }
             } catch (e) {
-                setError(e?.response?.data?.message || e.message || "Failed to load sleep details");
+                const msg = e?.response?.data?.message || e.message || "Failed to load sleep details";
+                setError(msg);
+                toast.error(msg);
             } finally {
                 setLoading(false);
             }
@@ -106,9 +109,13 @@ const SleepSection = ({ patientId }) => {
                 form,
                 { withCredentials: true }
             );
-            setMessage("Sleep details saved successfully.");
+            const msg = "Sleep details saved successfully.";
+            setMessage(msg);
+            toast.success(msg);
         } catch (e) {
-            setError(e?.response?.data?.message || e.message || "Failed to save sleep details");
+            const msg = e?.response?.data?.message || e.message || "Failed to save sleep details";
+            setError(msg);
+            toast.error(msg);
         } finally {
             setSaving(false);
         }

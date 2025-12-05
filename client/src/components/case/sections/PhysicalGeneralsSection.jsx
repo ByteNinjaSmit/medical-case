@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Activity, Save, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 
 const PhysicalGeneralsSection = ({ patientId }) => {
   const { API } = useAuth();
@@ -57,7 +58,9 @@ const PhysicalGeneralsSection = ({ patientId }) => {
           });
         }
       } catch (e) {
-        setError(e?.response?.data?.message || e.message || "Failed to load physical generals");
+        const msg = e?.response?.data?.message || e.message || "Failed to load physical generals";
+        setError(msg);
+        toast.error(msg);
       } finally {
         setLoading(false);
       }
@@ -87,9 +90,13 @@ const PhysicalGeneralsSection = ({ patientId }) => {
         form,
         { withCredentials: true }
       );
-      setMessage("Physical generals saved successfully.");
+      const msg = "Physical generals saved successfully.";
+      setMessage(msg);
+      toast.success(msg);
     } catch (e) {
-      setError(e?.response?.data?.message || e.message || "Failed to save physical generals");
+      const msg = e?.response?.data?.message || e.message || "Failed to save physical generals";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setSaving(false);
     }

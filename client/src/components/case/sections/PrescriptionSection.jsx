@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Pill, Plus, Trash2, Calendar, Clock, Edit2 } from "lucide-react";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 const PrescriptionSection = ({ patientId }) => {
     const { API } = useAuth();
@@ -30,10 +31,12 @@ const PrescriptionSection = ({ patientId }) => {
         if (!patientId) return;
         setLoading(true);
         try {
-            const res = await axios.get(`${API}/api/user/prescriptions/${patientId}`, { withCredentials: true });
+            const res = await axios.get(`${API}/api/prescriptions/${patientId}`, { withCredentials: true });
             setPrescriptions(res?.data || []);
         } catch (e) {
-            console.error("Failed to load prescriptions");
+            const msg = e?.response?.data?.message || e.message || "Failed to load prescriptions";
+            console.error("Failed to load prescriptions", e);
+            toast.error(msg);
         } finally {
             setLoading(false);
         }
@@ -89,21 +92,24 @@ const PrescriptionSection = ({ patientId }) => {
 
     const handleSave = async () => {
         if (formData.medicines.length === 0 || !formData.medicines[0].name) {
-            alert("Please add at least one medicine name.");
+            toast.error("Please add at least one medicine name.");
             return;
         }
         setSaving(true);
         try {
             const payload = { ...formData, patientId };
             if (currentPrescription) {
-                await axios.put(`${API}/api/user/prescriptions/${currentPrescription._id}`, payload, { withCredentials: true });
+                await axios.put(`${API}/api/prescriptions/${currentPrescription._id}`, payload, { withCredentials: true });
+                toast.success("Prescription updated successfully.");
             } else {
-                await axios.post(`${API}/api/user/prescriptions`, payload, { withCredentials: true });
+                await axios.post(`${API}/api/prescriptions`, payload, { withCredentials: true });
+                toast.success("Prescription created successfully.");
             }
             setIsDialogOpen(false);
             fetchPrescriptions();
         } catch (e) {
-            alert("Failed to save prescription");
+            const msg = e?.response?.data?.message || e.message || "Failed to save prescription";
+            toast.error(msg);
         } finally {
             setSaving(false);
         }
@@ -112,10 +118,12 @@ const PrescriptionSection = ({ patientId }) => {
     const handleDelete = async (id) => {
         if (!window.confirm("Delete this prescription?")) return;
         try {
-            await axios.delete(`${API}/api/user/prescriptions/${id}`, { withCredentials: true });
+            await axios.delete(`${API}/api/prescriptions/${id}`, { withCredentials: true });
             fetchPrescriptions();
+            toast.success("Prescription deleted successfully.");
         } catch (e) {
-            alert("Failed to delete prescription");
+            const msg = e?.response?.data?.message || e.message || "Failed to delete prescription";
+            toast.error(msg);
         }
     };
 

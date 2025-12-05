@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Trash2, Plus, Save, AlertCircle, Droplets } from "lucide-react";
+import { toast } from "sonner";
 
 const EliminationSection = ({ patientId }) => {
     const { API } = useAuth();
@@ -40,7 +41,9 @@ const EliminationSection = ({ patientId }) => {
                     });
                 }
             } catch (e) {
-                setError(e?.response?.data?.message || e.message || "Failed to load elimination details");
+                const msg = e?.response?.data?.message || e.message || "Failed to load elimination details";
+                setError(msg);
+                toast.error(msg);
             } finally {
                 setLoading(false);
             }
@@ -93,9 +96,13 @@ const EliminationSection = ({ patientId }) => {
                 form,
                 { withCredentials: true }
             );
-            setMessage("Elimination details saved successfully.");
+            const msg = "Elimination details saved successfully.";
+            setMessage(msg);
+            toast.success(msg);
         } catch (e) {
-            setError(e?.response?.data?.message || e.message || "Failed to save elimination details");
+            const msg = e?.response?.data?.message || e.message || "Failed to save elimination details";
+            setError(msg);
+            toast.error(msg);
         } finally {
             setSaving(false);
         }

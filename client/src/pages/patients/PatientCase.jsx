@@ -11,6 +11,7 @@ import {
   ArrowLeft, Activity, Utensils, Brain, User, Droplets, Moon,
   Heart, History, ThermometerSun, Microscope, CalendarClock, Pill
 } from "lucide-react";
+import { toast } from "sonner";
 
 // Section Components
 import DigestionSection from "@/components/case/sections/DigestionSection";
@@ -43,7 +44,9 @@ const PatientCase = () => {
         });
         setPatient(res?.data?.data || null);
       } catch (e) {
-        setError(e?.response?.data?.message || e.message || "Failed to load patient");
+        const msg = e?.response?.data?.message || e.message || "Failed to load patient";
+        setError(msg);
+        toast.error(msg);
       } finally {
         setLoading(false);
       }

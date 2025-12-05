@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Heart, Save, AlertCircle, CalendarDays } from "lucide-react";
+import { toast } from "sonner";
 
 const SexualHistorySection = ({ patientId, patientSex }) => {
     const { API } = useAuth();
@@ -86,7 +87,9 @@ const SexualHistorySection = ({ patientId, patientSex }) => {
                     }
                 }
             } catch (e) {
-                setError(e?.response?.data?.message || e.message || "Failed to load data");
+                const msg = e?.response?.data?.message || e.message || "Failed to load data";
+                setError(msg);
+                toast.error(msg);
             } finally {
                 setLoading(false);
             }
@@ -139,9 +142,13 @@ const SexualHistorySection = ({ patientId, patientSex }) => {
                 );
             }
 
-            setMessage("Details saved successfully.");
+            const msg = "Details saved successfully.";
+            setMessage(msg);
+            toast.success(msg);
         } catch (e) {
-            setError(e?.response?.data?.message || e.message || "Failed to save details");
+            const msg = e?.response?.data?.message || e.message || "Failed to save details";
+            setError(msg);
+            toast.error(msg);
         } finally {
             setSaving(false);
         }
