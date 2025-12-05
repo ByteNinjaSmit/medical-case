@@ -106,9 +106,9 @@ flowchart LR
 
   LOGS[(Vercel / External Logs)]:::logs
 
-  U -->|HTTPS GET /| FE
-  FE -->|XHR /api/... with credentials| EDGE
-  EDGE -->|rewrite /(.*) to /api/index.js| API
+  U -->|HTTPS GET home page| FE
+  FE -->|XHR /api/...| EDGE
+  EDGE -->|rewrite to API handler| API
   API --> DB
   API --> LOGS
 
