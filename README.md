@@ -108,7 +108,7 @@ flowchart LR
 
   U -->|HTTPS GET /| FE
   FE -->|XHR /api/... with credentials| EDGE
-  EDGE -->|routes /(.*) -> /api/index.js| API
+  EDGE -->|rewrite /(.*) to /api/index.js| API
   API --> DB
   API --> LOGS
 
@@ -241,7 +241,7 @@ sequenceDiagram
   DB-->>API: User
   API->>API: Verify password & generate JWTs
   API-->>B: 200 + Set-Cookie authToken & refreshToken (httpOnly)
-  Note over B,API: Browser stores cookies; JS cannot access them (httpOnly)
+  Note over B,API: Browser stores httpOnly cookies
 
   B->>API: Subsequent XHR /api/user/patients (with cookies)
   API->>API: auth-middleware verifies authToken
@@ -385,7 +385,7 @@ Defined in `routers/reports-router.js` and `controllers/reports-controller.js`. 
 
 ```mermaid
 flowchart TD
-  U[User (Doctor)]
+  U[Doctor User]
   P[Patient]
   C[Complaint]
   PR[Prescription]
@@ -395,7 +395,7 @@ flowchart TD
   PG[Physical Generals]
   DG[Digestion]
   EL[Elimination]
-  SD[Sleep & Dreams]
+  SD[Sleep and Dreams]
   SF[Sexual Function]
   MH[Menstrual History]
   HI[History]
@@ -565,7 +565,7 @@ flowchart TD
 
   NComp -->|Save complaint| UserAPI
   NPres -->|Save prescription| PresAPI
-  Case -->|Update modules (digestion, etc.)| UserAPI
+  Case -->|Update modules| UserAPI
   ReportsPage -->|Analytics requests| RepAPI
 
   UI -->|Auth state| AuthAPI
